@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrçaPro — UI Mockup (todas as telas)</title>
+<style>
+  /* ═══════════════════════════════════════════
+     TOKENS DE DESIGN — OrçaPro (3D Navy & Gold & Pix Teal)
+  ═══════════════════════════════════════════ */
+  :root {
+    --primary:      #162544;
+    --primary-dk:   #061629;
+    --primary-lt:   #EBF2FA;
+    --gold:         #FFA000;
+    --gold-lt:      #FFF7E6;
+    --pix:          #32BCAD;
+    --pix-lt:       #E8F8F6;
+    --green:        #1e8e3e;
+    --green-lt:     #e6f4ea;
+    --yellow:       #f9ab00;
+    --yellow-lt:    #fef7e0;
+    --red:          #d93025;
+    --red-lt:       #fce8e6;
+    --gray-900:     #0f172a;
+    --gray-700:     #334155;
+    --gray-500:     #64748b;
+    --gray-300:     #cbd5e1;
+    --gray-100:     #F4F7FB;
+    --white:        #ffffff;
+    --radius:       14px;
+    --radius-sm:    8px;
+    --shadow:       0 4px 16px rgba(11,37,69,.12);
+    --font:         'Inter', -apple-system, sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: var(--font); background: #e8ecf4; padding: 40px 20px; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  /* ── Layout da galeria ── */
+  .galeria {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .tela-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .tela-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  /* ── Frame do celular ── */
+  .celular {
+    width: 375px;
+    height: 812px;
+    background: var(--white);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.20), 0 0 0 2px #222;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  /* barra de status */
+  .status-bar {
+    height: 44px;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+  }
+  .status-bar span { color: rgba(255,255,255,.9); font-size: 12px; font-weight: 600; }
+  /* barra de navegação */
+  .nav-bar {
+    background: var(--primary);
+    padding: 0 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .nav-bar .back {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px; cursor: pointer;
+  }
+  .nav-title {
+    flex: 1;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .nav-action {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px;
+  }
+  /* conteúdo rolável */
+  .conteudo {
+    flex: 1;
+    overflow: hidden;
+    background: var(--gray-100);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── COMPONENTES ── */
+  .secao { padding: 16px; }
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-body { padding: 14px 16px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .chip-yellow { background: var(--yellow-lt); color: #b06000; }
+  .chip-green  { background: var(--green-lt);  color: var(--green); }
+  .chip-red    { background: var(--red-lt);    color: var(--red); }
+  .chip-gray   { background: var(--gray-300);  color: var(--gray-700); }
+  .chip-blue   { background: var(--primary-lt); color: var(--primary); }
+
+  .fab {
+    position: absolute;
+    bottom: 24px; right: 16px;
+    background: var(--primary);
+    color: white;
+    border-radius: 28px;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700;
+    box-shadow: 0 4px 16px rgba(26,115,232,.4);
+  }
+
+  /* Campo de input */
+  .input-group { margin-bottom: 12px; }
+  .input-label { font-size: 11px; color: var(--gray-500); font-weight: 600; margin-bottom: 4px; }
+  .input-field {
+    width: 100%;
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--gray-900);
+  }
+  .input-field.focus { border-color: var(--primary); }
+  .input-field.placeholder { color: var(--gray-500); }
+  .input-row { display: flex; gap: 10px; }
+  .input-row .input-group { flex: 1; }
+
+  /* Step indicator */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: white;
+    border-bottom: 1px solid var(--gray-300);
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step-dot.done   { background: var(--green); color: white; }
+  .step-dot.active { background: var(--primary); color: white; }
+  .step-dot.idle   { background: var(--gray-300); color: var(--gray-500); }
+  .step-line { flex: 1; height: 2px; background: var(--gray-300); max-width: 40px; }
+  .step-line.done { background: var(--green); }
+
+  /* Botões */
+  .btn {
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--primary); color: white; width: 100%; justify-content: center; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+  .btn-text    { background: transparent; color: var(--primary); padding: 12px 4px; }
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
+  /* Resumo financeiro */
+  .resumo-card {
+    background: var(--primary-lt);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: 12px 0;
+  }
+  .resumo-linha {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .resumo-linha.total {
+    border-top: 1.5px solid rgba(26,115,232,.3);
+    margin-top: 8px; padding-top: 8px;
+    font-size: 16px; font-weight: 800;
+    color: var(--primary);
+  }
+  .resumo-linha.lucro { color: var(--green); font-weight: 600; }
+
+  /* Searchbar */
+  .searchbar {
+    margin: 12px 16px 8px;
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
+    border: 1.5px solid var(--gray-300);
+    box-shadow: var(--shadow);
+  }
+  .searchbar span { color: var(--gray-500); font-size: 16px; }
+  .searchbar input { border: none; outline: none; flex: 1; font-size: 14px; color: var(--gray-700); background: transparent; }
+
+  /* Filtros chips */
+  .filtros { display: flex; gap: 8px; padding: 0 16px 10px; overflow-x: auto; }
+  .filtros::-webkit-scrollbar { display: none; }
+
+  /* Stat card */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+  .stat-card { background: white; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+  .stat-num { font-size: 22px; font-weight: 800; color: var(--primary); }
+  .stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .stat-card.green .stat-num { color: var(--green); }
+  .stat-card.yellow .stat-num { color: var(--yellow); }
+
+  /* PDF preview */
+  .pdf-preview {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    box-shadow: var(--shadow);
+    margin: 12px 16px;
+    font-size: 11px;
+  }
+  .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 8px; }
+  .pdf-title { font-size: 14px; font-weight: 800; color: var(--primary); }
+  .pdf-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .pdf-table th { background: var(--primary); color: white; padding: 4px 6px; font-size: 10px; text-align: left; }
+  .pdf-table td { padding: 4px 6px; border-bottom: 1px solid var(--gray-300); }
+  .pdf-table .dir { text-align: right; }
+  .pdf-total { display: flex; justify-content: flex-end; }
+  .pdf-total-box { background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 13px; }
+  .pix-box { display: flex; align-items: center; gap: 8px; background: var(--primary-lt); border-radius: 8px; padding: 8px; margin-top: 8px; }
+  .qr-placeholder { width: 48px; height: 48px; background: var(--gray-300); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .pix-info p { font-size: 10px; color: var(--gray-700); }
+  .pix-chave { font-family: monospace; font-size: 10px; background: white; padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+  .garantia-box { background: #fffdf0; border: 1px solid #f9ab00; border-radius: 6px; padding: 6px 8px; font-size: 9px; color: var(--gray-700); margin-top: 8px; }
+
+  /* Maquininha modal */
+  .modal-sheet {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.12);
+  }
+  .modal-handle { width: 36px; height: 4px; background: var(--gray-300); border-radius: 2px; margin: 0 auto 16px; }
+  .parcelas-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .parcela-btn {
+    padding: 6px 12px; border-radius: 20px;
+    border: 1.5px solid var(--gray-300);
+    font-size: 12px; font-weight: 600; color: var(--gray-700);
+  }
+  .parcela-btn.active {
+    border-color: var(--primary); background: var(--primary-lt); color: var(--primary);
+  }
+
+  /* Configurações */
+  .config-section { padding: 16px; }
+  .config-label { font-size: 12px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 10px; }
+  .logo-upload {
+    background: var(--gray-100);
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius);
+    height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+    color: var(--gray-500); font-size: 13px; gap: 8px;
+  }
+  .pix-detected { background: var(--green-lt); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 8px; font-size: 12px; color: var(--green); font-weight: 600; }
+
+  .page-title {
+    font-size: 20px;
+    font-weight: 800;
+    padding: 20px 16px 8px;
+    color: var(--gray-900);
+  }
+  .contador { font-size: 12px; color: var(--gray-500); padding: 0 16px 8px; }
+  .divider { height: 1px; background: var(--gray-300); margin: 0 16px 12px; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center; margin-bottom:32px;">
+  <div style="font-size:32px; font-weight:800; color:#1a73e8;">OrçaPro</div>
+  <div style="font-size:14px; color:#757575; margin-top:4px;">UI Design — Todas as telas · Mobile Android</div>
+</div>
+
+<div class="galeria">
+
+  <!-- ══════════════════════════════════════
+       TELA 1 — LISTA DE ORÇAMENTOS (Home)
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">01 · Lista (Home)</div>
+    <div class="celular">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>OrçaPro</span>
+        <span>⚡ 🔋</span>
+      </div>
+      <div class="nav-bar" style="justify-content:space-between;">
+        <div class="nav-title">OrçaPro</div>
+        <div style="display:flex;gap:4px;">
+          <div class="nav-action" onclick="">📊</div>
+          <div class="nav-action">⚙️</div>
+        </div>
+      </div>
+      <div class="conteudo">
+        <div class="searchbar">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar cliente..." readonly>
+        </div>
+        <div class="filtros">
+          <div class="chip chip-blue" style="border:1.5px solid #1a73e8;">Todos</div>
+          <div class="chip" style="background:white;border:1.5px solid #e0e0e0;color:#424242;">⏳ Aguardando</div>
+          <div class="chip" style="background:white;border:1.5px solid #e0e0e0;color:#424242;">✅ Fechado</div>
+          <div class="chip" style="background:white;border:1.5px solid #e0e0e0;color:#424242;">❌ Recusado</div>
+        </div>
+        <div class="divider"></div>
+        <div class="contador">4 orçamentos</div>
+        <div style="padding:0 12px;display:flex;flex-direction:column;gap:8px;overflow:hidden;">
+
+          <!-- Card orçamento 1 -->
+          <div class="card" style="box-shadow:var(--shadow);">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:var(--gray-900);">Carlos Silva</div>
+                  <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">#0003 · 02/11/2026</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:15px;font-weight:800;color:var(--primary);">R$ 890,00</div>
+                  <div class="chip chip-yellow" style="margin-top:4px;">⏳ Aguardando</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card orçamento 2 -->
+          <div class="card">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:var(--gray-900);">Mariana Costa</div>
+                  <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">#0002 · 01/11/2026</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:15px;font-weight:800;color:var(--primary);">R$ 1.250,00</div>
+                  <div class="chip chip-green" style="margin-top:4px;">✅ Fechado</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card orçamento 3 -->
+          <div class="card">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                  <div style="font-size:15px;font-weight:700;color:var(--gray-900);">João Pereira</div>
+                  <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">#0001 · 30/10/2026</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:15px;font-weight:800;color:var(--primary);">R$ 450,00</div>
+                  <div class="chip chip-red" style="margin-top:4px;">❌ Recusado</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <span style="font-size:20px;">＋</span>
+          <span>Novo Orçamento</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 2 — NOVO ORÇAMENTO — STEP 1
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">02 · Novo · Step 1 · Cliente</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Novo Orçamento</div>
+      </div>
+      <div class="conteudo">
+        <div class="steps">
+          <div class="step-dot active">1</div>
+          <div class="step-line"></div>
+          <div class="step-dot idle">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot idle">3</div>
+        </div>
+        <div style="overflow:auto;flex:1;padding:16px;">
+          <div style="font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:16px;">👤 Dados do Cliente</div>
+
+          <div class="input-group">
+            <div class="input-label">Nome do cliente *</div>
+            <div class="input-field focus">Carlos Silva</div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Telefone (opcional)</div>
+            <div class="input-field">(11) 98765-4321</div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Endereço do serviço (opcional)</div>
+            <div class="input-field">Rua das Flores, 123 — São Paulo</div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Validade do orçamento (dias)</div>
+            <div class="input-field">7</div>
+          </div>
+
+          <div class="btn btn-primary" style="margin-top:8px;">Próximo → Itens do Serviço</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 3 — NOVO ORÇAMENTO — STEP 2
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">03 · Novo · Step 2 · Itens</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Novo Orçamento</div>
+      </div>
+      <div class="conteudo">
+        <div class="steps">
+          <div class="step-dot done">✓</div>
+          <div class="step-line done"></div>
+          <div class="step-dot active">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot idle">3</div>
+        </div>
+        <div style="overflow:auto;flex:1;padding:16px;">
+          <div style="font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:14px;">🔧 Itens e Serviços</div>
+
+          <!-- Item card 1 -->
+          <div class="card" style="margin-bottom:10px;">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-weight:700;color:var(--primary);font-size:13px;">Item 1</div>
+                <div style="color:var(--red);font-size:18px;">🗑</div>
+              </div>
+              <div class="input-group">
+                <div class="input-label">Descrição *</div>
+                <div class="input-field">Instalação ar condicionado split 9000 BTU</div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <div class="input-label">Material (R$)</div>
+                  <div class="input-field">350,00</div>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Mão de obra (R$)</div>
+                  <div class="input-field">200,00</div>
+                </div>
+              </div>
+              <div class="input-group" style="max-width:100px;">
+                <div class="input-label">Qtd</div>
+                <div class="input-field">1</div>
+              </div>
+              <div style="text-align:right;font-size:12px;color:var(--primary);font-weight:700;">
+                Subtotal: R$ 550,00
+              </div>
+            </div>
+          </div>
+
+          <!-- Item card 2 (menor) -->
+          <div class="card" style="margin-bottom:12px;">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-weight:700;color:var(--primary);font-size:13px;">Item 2</div>
+                <div style="color:var(--red);font-size:18px;">🗑</div>
+              </div>
+              <div class="input-group">
+                <div class="input-label">Descrição *</div>
+                <div class="input-field">Suporte e fixação</div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <div class="input-label">Material (R$)</div>
+                  <div class="input-field">80,00</div>
+                </div>
+                <div class="input-group">
+                  <div class="input-label">Mão de obra (R$)</div>
+                  <div class="input-field">0,00</div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:12px;color:var(--primary);font-weight:700;">
+                Subtotal: R$ 80,00
+              </div>
+            </div>
+          </div>
+
+          <div class="btn btn-outline" style="margin-bottom:16px;">＋ Adicionar Item</div>
+          <div class="btn-row">
+            <div class="btn btn-text">← Voltar</div>
+            <div class="btn btn-primary" style="width:auto;">Próximo →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 4 — NOVO ORÇAMENTO — STEP 3
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">04 · Novo · Step 3 · Lucro + Resumo</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Novo Orçamento</div>
+      </div>
+      <div class="conteudo">
+        <div class="steps">
+          <div class="step-dot done">✓</div>
+          <div class="step-line done"></div>
+          <div class="step-dot done">✓</div>
+          <div class="step-line done"></div>
+          <div class="step-dot active">3</div>
+        </div>
+        <div style="overflow:auto;flex:1;padding:16px;">
+          <div style="font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:14px;">💰 Custos Extras e Lucro</div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <div class="input-label">Deslocamento (R$)</div>
+              <div class="input-field">50,00</div>
+            </div>
+            <div class="input-group">
+              <div class="input-label">Outros (R$)</div>
+              <div class="input-field">0,00</div>
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Margem de lucro (%)</div>
+            <div class="input-field focus">30 %</div>
+          </div>
+
+          <!-- Resumo financeiro -->
+          <div class="resumo-card">
+            <div style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:8px;">📊 Resumo</div>
+            <div class="resumo-linha"><span>Subtotal serviços</span><span>R$ 630,00</span></div>
+            <div class="resumo-linha"><span>Deslocamento</span><span>R$ 50,00</span></div>
+            <div class="resumo-linha"><span>Custo total</span><span style="font-weight:700;">R$ 680,00</span></div>
+            <div class="resumo-linha lucro"><span>Lucro (30%)</span><span>+ R$ 204,00</span></div>
+            <div class="resumo-linha total"><span>💵 PREÇO FINAL</span><span>R$ 884,00</span></div>
+          </div>
+
+          <!-- Botão maquininha -->
+          <div class="btn btn-outline" style="margin-bottom:12px;width:100%;justify-content:center;">
+            💳 Calcular taxa da maquininha
+          </div>
+
+          <div class="input-group">
+            <div class="input-label">Observações (opcional)</div>
+            <div class="input-field" style="height:60px;font-size:13px;color:var(--gray-500);">Incluindo 2 metros de tubulação...</div>
+          </div>
+
+          <div class="btn-row">
+            <div class="btn btn-text">← Voltar</div>
+            <div class="btn btn-primary" style="width:auto;">📄 Gerar PDF e Enviar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 5 — CALCULADORA MAQUININHA
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">05 · Modal: Maquininha</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Novo Orçamento</div>
+      </div>
+      <div class="conteudo" style="position:relative;">
+        <!-- Fundo escurecido -->
+        <div style="flex:1;background:rgba(0,0,0,.4);"></div>
+        <!-- Bottom sheet -->
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div style="font-size:16px;font-weight:700;color:var(--gray-900);margin-bottom:6px;">💳 Calculadora Maquininha</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-bottom:14px;">
+            Baseado no preço final de <strong>R$ 884,00</strong>.
+            Quanto cobrar para receber esse valor líquido?
+          </div>
+
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Parcelas do cartão:</div>
+          <div class="parcelas-row">
+            <div class="parcela-btn active">À vista</div>
+            <div class="parcela-btn">2x</div>
+            <div class="parcela-btn">3x</div>
+            <div class="parcela-btn">6x</div>
+            <div class="parcela-btn">10x</div>
+            <div class="parcela-btn">12x</div>
+          </div>
+
+          <div style="background:var(--green-lt);border-radius:var(--radius);padding:14px;margin:12px 0;">
+            <div class="resumo-linha"><span>Você quer receber</span><span>R$ 884,00</span></div>
+            <div class="resumo-linha" style="color:var(--red);"><span>Taxa maquininha (1,99%)</span><span>- R$ 17,60</span></div>
+            <div style="height:1px;background:rgba(0,0,0,.1);margin:8px 0;"></div>
+            <div class="resumo-linha" style="font-size:16px;font-weight:800;color:var(--green);"><span>Cobrar do cliente</span><span>R$ 901,99</span></div>
+          </div>
+
+          <div class="btn btn-primary">Fechar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 6 — PRÉVIA DO PDF
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">06 · Prévia do PDF</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Orçamento #0004</div>
+        <div class="nav-action">↗</div>
+      </div>
+      <div class="conteudo" style="overflow:auto;">
+        <div style="padding:12px;">
+          <div class="pdf-preview">
+            <div class="pdf-header">
+              <div>
+                <div class="pdf-title">João Eletricista</div>
+                <div style="font-size:10px;color:var(--gray-500);">📞 (11) 98765-4321</div>
+              </div>
+              <div style="background:var(--primary-lt);padding:6px 10px;border-radius:6px;text-align:right;">
+                <div style="font-weight:700;color:var(--primary);">Orç. #0004</div>
+                <div style="font-size:9px;color:var(--gray-500);">02/11/2026 · 7 dias</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:8px;">
+              <div style="font-size:9px;color:var(--gray-500);font-weight:700;text-transform:uppercase;margin-bottom:4px;">Cliente</div>
+              <div style="font-weight:700;">Carlos Silva</div>
+              <div style="font-size:10px;color:var(--gray-500);">📍 Rua das Flores, 123 — São Paulo</div>
+            </div>
+
+            <table class="pdf-table">
+              <thead><tr><th>Descrição</th><th class="dir">Qtd</th><th class="dir">Total</th></tr></thead>
+              <tbody>
+                <tr><td>Instalação ar cond. split 9000 BTU</td><td class="dir">1x</td><td class="dir"><strong>R$ 550,00</strong></td></tr>
+                <tr><td>Suporte e fixação</td><td class="dir">1x</td><td class="dir"><strong>R$ 80,00</strong></td></tr>
+                <tr><td>Deslocamento</td><td class="dir">—</td><td class="dir"><strong>R$ 50,00</strong></td></tr>
+              </tbody>
+            </table>
+
+            <div class="pdf-total">
+              <div class="pdf-total-box">TOTAL R$ 884,00</div>
+            </div>
+
+            <div class="pix-box">
+              <div class="qr-placeholder">📱</div>
+              <div class="pix-info">
+                <p style="font-weight:700;color:var(--primary);">💳 Pague via Pix</p>
+                <p>Escaneie o QR ou copie a chave:</p>
+                <div class="pix-chave">🔑 11987654321</div>
+              </div>
+            </div>
+
+            <div class="garantia-box">
+              ⚖️ <strong>Garantia:</strong> 90 dias conforme art. 26 do CDC (Lei 8.078/90).
+            </div>
+          </div>
+
+          <!-- Botões de ação -->
+          <div style="padding:0 4px;display:flex;flex-direction:column;gap:10px;">
+            <div class="btn btn-primary">
+              <span>📲</span> Enviar pelo WhatsApp
+            </div>
+            <div style="display:flex;gap:10px;">
+              <div class="btn btn-outline" style="flex:1;justify-content:center;">
+                <span>✅</span> Marcar como Fechado
+              </div>
+              <div class="btn" style="border:1.5px solid var(--red);color:var(--red);flex:1;justify-content:center;">
+                <span>❌</span> Recusado
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 7 — ESTATÍSTICAS
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">07 · Estatísticas</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Estatísticas</div>
+      </div>
+      <div class="conteudo" style="overflow:auto;">
+
+        <div style="background:var(--primary);padding:16px 16px 24px;color:white;">
+          <div style="font-size:13px;opacity:.8;margin-bottom:4px;">Novembro 2026</div>
+          <div style="font-size:28px;font-weight:800;">R$ 1.250,00</div>
+          <div style="font-size:13px;opacity:.8;margin-top:2px;">Receita no mês</div>
+        </div>
+
+        <div class="stat-grid" style="margin-top:-10px;">
+          <div class="stat-card">
+            <div class="stat-num">4</div>
+            <div class="stat-label">Total de orçamentos</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-num">1</div>
+            <div class="stat-label">Fechados</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-num">25%</div>
+            <div class="stat-label">Taxa de fechamento</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-num">R$ 370</div>
+            <div class="stat-label">Lucro estimado</div>
+          </div>
+        </div>
+
+        <!-- Mini lista dos últimos -->
+        <div style="padding:0 16px 16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:10px;">Últimos fechados</div>
+          <div class="card">
+            <div class="card-body">
+              <div style="display:flex;justify-content:space-between;">
+                <span style="font-weight:600;">Mariana Costa</span>
+                <span style="color:var(--green);font-weight:700;">R$ 1.250,00</span>
+              </div>
+              <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">01/11/2026 · Lucro R$ 290,00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TELA 8 — CONFIGURAÇÕES
+  ══════════════════════════════════════ -->
+  <div class="tela-wrapper">
+    <div class="tela-label">08 · Configurações</div>
+    <div class="celular">
+      <div class="status-bar"><span>9:41</span><span></span><span>⚡ 🔋</span></div>
+      <div class="nav-bar">
+        <div class="back">←</div>
+        <div class="nav-title">Configurações</div>
+      </div>
+      <div class="conteudo" style="overflow:auto;">
+        <div class="config-section">
+
+          <div class="config-label">Logo da Empresa</div>
+          <div class="logo-upload">
+            <span style="font-size:24px;">📷</span>
+            <span>Toque para selecionar seu logo</span>
+          </div>
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:16px;">
+            Aparece no PDF. Proporção ideal: 4:1
+          </div>
+
+          <div style="height:1px;background:var(--gray-300);margin-bottom:16px;"></div>
+          <div class="config-label">Seus Dados</div>
+
+          <div class="input-group">
+            <div class="input-label">Nome / Empresa *</div>
+            <div class="input-field">João Eletricista</div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Telefone / WhatsApp</div>
+            <div class="input-field">(11) 98765-4321</div>
+          </div>
+          <div class="input-group">
+            <div class="input-label">Cidade</div>
+            <div class="input-field">São Paulo</div>
+          </div>
+
+          <div style="height:1px;background:var(--gray-300);margin:16px 0;"></div>
+          <div class="config-label">Chave Pix</div>
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:10px;">
+            Aparece no PDF como QR Code e texto copiável.
+          </div>
+          <div class="input-group">
+            <div class="input-label">Chave Pix</div>
+            <div class="input-field focus">11987654321</div>
+          </div>
+          <div class="pix-detected">✅ Tipo detectado: Telefone · (11) 98765-4321</div>
+
+          <div style="margin-top:20px;">
+            <div class="btn btn-primary">💾 Salvar Configurações</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /galeria -->
+
+<div style="text-align:center;margin-top:40px;color:#9e9e9e;font-size:12px;">
+  OrçaPro UI Design · 8 telas · Gerado para importação no Figma
+</div>
+
+</body>
+</html>

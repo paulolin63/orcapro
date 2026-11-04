@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "OrçaPro",
+    "slug": "orcapro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#151724"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#151724"
+      },
+      "package": "com.paulolin.orcapro",
+      "versionCode": 2,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.paulolin.orcapro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "react-native-iap",
+        {
+          "paymentProvider": "Play Store"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir acesso às fotos para adicionar sua logo e analisar materiais no orçamento.",
+          "cameraPermission": "Permitir a câmera para fotografar materiais para o assistente de orçamento."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Permitir o microfone para criar orçamentos falando por comando de voz com IA."
+        }
+      ],
+      "expo-font",
+      "expo-asset"
+    ],
+    "scheme": "orcapro",
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7240d1ce-ca66-4e69-855f-18db7e636e4e"
+      }
+    },
+    "owner": "paulolin63"
+  }
+}
