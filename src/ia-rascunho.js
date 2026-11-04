@@ -8,8 +8,22 @@
  * 2. Extrator inteligente local em Português (offline / fallback instantâneo)
  */
 
-import * as FileSystem from 'expo-file-system';
-import * as SecureStore from 'expo-secure-store';
+// Helpers para carregamento seguro em runtime mobile e ambiente Node
+async function getSecureStore() {
+  try {
+    return await import('expo-secure-store');
+  } catch (_) {
+    return null;
+  }
+}
+
+async function getFileSystem() {
+  try {
+    return await import('expo-file-system');
+  } catch (_) {
+    return null;
+  }
+}
 
 export const CHAVE_GEMINI_STORE = 'orcapro_gemini_api_key';
 
@@ -185,12 +199,17 @@ export async function gerarRascunhoIa(input) {
   // 1. Tenta recuperar Chave Gemini se o usuário configurou
   let chaveGemini = null;
   try {
-    chaveGemini = await SecureStore.getItemAsync(CHAVE_GEMINI_STORE);
+    const SecureStore = await getSecureStore();
+    if (SecureStore) {
+      chaveGemini = await SecureStore.getItemAsync(CHAVE_GEMINI_STORE);
+    }
   } catch (_) {}
 
   // 2. Se temos áudio e uma chave Gemini, tenta chamar a nuvem
   if (origem === 'audio' && uri && chaveGemini) {
     try {
+      const FileSystem = await getFileSystem();
+      if (!FileSystem) throw new Error('FileSystem indisponível');
       const audioBase64 = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
