@@ -52,11 +52,11 @@ Se a compra unica ja libera PDF ilimitado, a assinatura mensal **precisa vender 
 4. Pacote 15 creditos — secundario / na tela de IA
 
 ## Faseamento
-- **v1 (agora):** UI voz/foto + rascunho **MOCK** em `AssistenteIA` / `ia-rascunho.js`. 1 demo gratis/instalacao; depois exige credito.
-- **v1.1:** trocar `gerarRascunhoIa` por Whisper/Vision reais (backend).
-- Paywall ja vende Pro IA + pacote; so ative cobranca no Console quando mock for aceitavel ou API estiver pronta.
+- **v1 (agora):** `FEATURE_PRO_IA=false` em `src/feature-flags.js` — paywall so **Permanente**. Modelos reutilizaveis + PDF sem marca Free no Lifetime. AssistenteIA / SKUs IA escondidos.
+- **v1.1:** `FEATURE_PRO_IA=true` + proxy Gemini/Whisper proprio (nao BYO key). Ative SKUs `*_ia_*` no Console.
+- UI voz/foto + rascunho em `AssistenteIA` / `ia-rascunho.js` ja existem; so ligue a flag quando a API for de verdade.
 
-Nao venda Pro IA como “IA real” enquanto o pipeline for mock — copy do paywall/assistente diz “demo”.
+Nao venda Pro IA como “IA real” enquanto o pipeline for mock/BYO.
 
 ## Alternativa se AI atrasar
 Assinatura mensal temporaria = permanente com “cloud backup / sync” — so faca se tiver backend. Sem backend, **nao invente feature fantasma**.

@@ -1,6 +1,6 @@
 # Política de Privacidade — OrçaPro
 
-**Última atualização:** 4 de novembro de 2026  
+**Última atualização:** 5 de novembro de 2026  
 **Em conformidade com a LGPD (Lei Geral de Proteção de Dados nº 13.709/2018)**
 
 O **OrçaPro** foi desenvolvido com o compromisso fundamental de respeitar e proteger a sua privacidade. Esta Política de Privacidade descreve como as informações são tratadas pelo nosso aplicativo.
@@ -38,19 +38,29 @@ Ao optar por compartilhar um orçamento em PDF via WhatsApp, e-mail ou outro can
 
 ---
 
-## 6. Permissões de Microfone e Câmera (Assistente IA)
-O aplicativo solicita permissões específicas apenas quando você decide utilizar os recursos opcionais do Assistente IA:
-- **Microfone (`android.permission.RECORD_AUDIO`):** Utilizado exclusivamente no momento em que você pressiona o botão de ditar por voz para transcrever os itens e valores do orçamento. O áudio é processado para extração técnica dos itens e não é gravado permanentemente nem compartilhado com terceiros para fins publicitários.
-- **Câmera e Fotos (`android.permission.CAMERA` / `READ_MEDIA_IMAGES`):** Utilizadas exclusivamente quando você escolhe fotografar materiais ou selecionar a logomarca da sua empresa para estampar no cabeçalho do PDF.
+## 6. Assistente IA e Google Gemini (opcional)
+Quando o Assistente IA estiver ativo e houver chave da API Google Gemini (Configurações) ou processamento via Google, podem ser enviados aos servidores da **Google LLC** (`generativelanguage.googleapis.com`):
+- Áudio ditado para rascunho de orçamento;
+- Texto de contexto;
+- Imagens de materiais/notas, se você enviar foto.
+
+Uso exclusivo: extrair itens/valores do orçamento. Sem Assistente IA / sem chave, o extrator permanece local. A chave Gemini fica só no SecureStore do aparelho (não em servidores OrçaPro).
 
 ---
 
-## 7. Direitos do Usuário (LGPD)
+## 7. Permissões de Microfone e Câmera (Assistente IA)
+O aplicativo solicita permissões apenas ao usar Assistente IA ou logomarca:
+- **Microfone (`android.permission.RECORD_AUDIO`):** ditado por voz; o áudio pode ir à Google Gemini se a API estiver ativa (seção 6). Sem uso publicitário.
+- **Câmera e Fotos (`android.permission.CAMERA` / `READ_MEDIA_IMAGES`):** foto de materiais ou logo no PDF.
+
+---
+
+## 8. Direitos do Usuário (LGPD)
 Como os dados ficam gravados exclusivamente no seu dispositivo, você possui controle absoluto e imediato sobre eles: para excluir permanentemente qualquer registro ou histórico, basta excluir o orçamento no próprio aplicativo ou desinstalar o OrçaPro do seu dispositivo.
 
 ---
 
-## 8. Contato e Suporte
+## 9. Contato e Suporte
 Para dúvidas, suporte ou esclarecimentos referentes a esta Política de Privacidade, entre em contato através do e-mail do desenvolvedor:
 
 - **E-mail:** [lin030682@gmail.com](mailto:lin030682@gmail.com)

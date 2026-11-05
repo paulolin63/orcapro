@@ -23,9 +23,11 @@ import { criarOrcamento, lerTodasConfigs } from '@src/banco-de-dados';
 import { calcularItemSubtotal, calcularTotal, calcularMaquininha,
          formatarReais, parsearReais, TAXAS_MAQUININHA_PADRAO } from '@src/calculos';
 import { gerarPDF, compartilharPDF } from '@src/pdf';
-import { checarPermissaoNovoOrcamento, consumirQuotaSePermitido } from '@src/assinatura';
+import { checarPermissaoNovoOrcamento, consumirQuotaSePermitido, verificarEntitlement } from '@src/assinatura';
+import { FEATURE_WATERMARK_FREE } from '@src/feature-flags';
 import AssistenteIA from '@src/componentes/AssistenteIA';
 import ModalPaywall from '@src/componentes/ModalPaywall';
+import SeletorModelos from '@src/componentes/SeletorModelos';
 
 // ─────────────────────────────────────────
 // ESTADO INICIAL — equivale a $dados = [] no PHP
@@ -173,6 +175,22 @@ export default function NovoOrcamento() {
     setStep(2);
   }
 
+  function aplicarModelo(modelo) {
+    const itensModelo = (modelo.itens || []).map((i) => ({
+      ...ITEM_VAZIO,
+      descricao: String(i.descricao || ''),
+      custo_material: i.custo_material != null && i.custo_material !== ''
+        ? String(i.custo_material).replace('.', ',')
+        : '',
+      custo_mao_obra: i.custo_mao_obra != null && i.custo_mao_obra !== ''
+        ? String(i.custo_mao_obra).replace('.', ',')
+        : '',
+      quantidade: i.quantidade != null ? String(i.quantidade) : '1',
+    }));
+    if (itensModelo.length) setItens(itensModelo);
+    setStep(2);
+  }
+
   // ─────────────────────────────────────────
   // SALVAR ORÇAMENTO E GERAR PDF
   // PHP analogy: INSERT INTO orcamentos + gerar PDF com DOMPDF
@@ -240,10 +258,12 @@ export default function NovoOrcamento() {
 
       // Carrega configurações para o PDF
       const config = await lerTodasConfigs();
+      const ent = await verificarEntitlement();
+      const mostrarMarcaFree = FEATURE_WATERMARK_FREE && !ent.ilimitadoOrcamentos;
 
       // Gera o PDF
       const orcamentoComId = { ...dadosOrcamento, id: orcamentoId };
-      const pdfUri = await gerarPDF(orcamentoComId, itensFinal, config);
+      const pdfUri = await gerarPDF(orcamentoComId, itensFinal, config, { mostrarMarcaFree });
 
       // Compartilha imediatamente via WhatsApp / qualquer app
       await compartilharPDF(pdfUri);
@@ -283,6 +303,11 @@ export default function NovoOrcamento() {
             <AssistenteIA
               onRascunho={aplicarRascunhoIa}
               onPrecisaCredito={() => setModalPaywallIa(true)}
+            />
+
+            <SeletorModelos
+              onAplicar={aplicarModelo}
+              onPrecisaPro={() => setModalPaywallIa(true)}
             />
 
             <Text variant="titleMedium" style={estilos.titulo}>👤 Dados do Cliente</Text>

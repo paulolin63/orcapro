@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { lerTodasConfigs, salvarConfig } from '@src/banco-de-dados';
 import { detectarTipoChave, formatarChavePix, normalizarChavePix } from '@src/pix';
 import { CHAVE_GEMINI_STORE } from '@src/ia-rascunho';
+import { FEATURE_PRO_IA } from '@src/feature-flags';
 
 const INPUT_THEME = {
   colors: {
@@ -237,25 +238,26 @@ export default function Configuracoes() {
           </Card>
         ) : null}
 
-        <Divider style={{ marginVertical: 16 }} />
-
-        {/* ── ASSISTENTE IA (GEMINI) ── */}
-        <Text variant="titleSmall" style={estilos.subtitulo}>Inteligência Artificial (Opcional)</Text>
-        <Text style={estilos.dica}>
-          Insira sua chave gratuita da Google Gemini API para reconhecimento de voz online avançado. Se deixar em branco, o assistente usará o processador inteligente local.
-        </Text>
-
-        <TextInput
-          {...INPUT_OPTS}
-          label="Chave Google Gemini API (opcional)"
-          value={chaveGemini}
-          onChangeText={setChaveGemini}
-          style={estilos.input}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-          placeholder="AIzaSy..."
-        />
+        {FEATURE_PRO_IA ? (
+          <>
+            <Divider style={{ marginVertical: 16 }} />
+            <Text variant="titleSmall" style={estilos.subtitulo}>Inteligência Artificial (Opcional)</Text>
+            <Text style={estilos.dica}>
+              Insira sua chave gratuita da Google Gemini API para reconhecimento de voz online avançado. Se deixar em branco, o assistente usará o processador inteligente local.
+            </Text>
+            <TextInput
+              {...INPUT_OPTS}
+              label="Chave Google Gemini API (opcional)"
+              value={chaveGemini}
+              onChangeText={setChaveGemini}
+              style={estilos.input}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="AIzaSy..."
+            />
+          </>
+        ) : null}
 
         <Divider style={{ marginVertical: 16 }} />
 

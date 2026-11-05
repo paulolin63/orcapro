@@ -119,8 +119,45 @@ await (async () => {
 
   const appJson = JSON.parse(fs.readFileSync(new URL('../app.json', import.meta.url), 'utf8'));
   assert.equal(appJson.expo.android.package, 'com.orcapro.myapp');
+  assert.ok(appJson.expo.android.versionCode >= 3, 'versionCode must bump after Billing 8 rebuild');
   assert.ok(appJson.expo.plugins.includes('expo-secure-store') || appJson.expo.plugins.some((p) => p === 'expo-secure-store' || p[0] === 'react-native-iap'));
-  console.log('PASS app.json package/plugins');
+  const billingPlugin = appJson.expo.plugins.find((p) => Array.isArray(p) && String(p[0]).includes('withBillingVersion'));
+  assert.ok(billingPlugin, 'withBillingVersion plugin missing');
+  assert.equal(String(billingPlugin[1]), '8.0.0');
+  console.log('PASS app.json package/plugins/billing8');
+
+  const rniapProps = fs.readFileSync(
+    new URL('../node_modules/react-native-iap/android/gradle.properties', import.meta.url),
+    'utf8'
+  );
+  assert.match(rniapProps, /RNIap_playBillingSdkVersion=8\.0\.0/);
+  console.log('PASS rniap billing sdk 8.0.0');
+
+  const rniapKt = fs.readFileSync(
+    new URL('../node_modules/react-native-iap/android/src/play/java/com/dooboolab/rniap/RNIapModule.kt', import.meta.url),
+    'utf8'
+  );
+  assert.ok(rniapKt.includes('PendingPurchasesParams'), 'billing8 pending purchases patch');
+  assert.ok(rniapKt.includes('productDetailsResult'), 'billing8 product details patch');
+  assert.ok(!rniapKt.includes('queryPurchaseHistoryAsync'), 'billing8 history removed');
+  console.log('PASS rniap billing8 kotlin patch');
+
+  const rniapGradle = fs.readFileSync(
+    new URL('../node_modules/react-native-iap/android/build.gradle', import.meta.url),
+    'utf8'
+  );
+  assert.match(rniapGradle, /billingclient:billing:\$playBillingSdkVersion/);
+  assert.ok(!rniapGradle.includes('billing-ktx:$playBillingSdkVersion'), 'must not use billing-ktx on Expo 52');
+  console.log('PASS rniap uses billing artifact (not ktx)');
+
+  const buildProps = appJson.expo.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-build-properties');
+  assert.ok(buildProps, 'expo-build-properties missing');
+  assert.ok(!buildProps[1]?.android?.kotlinVersion || !String(buildProps[1].android.kotlinVersion).startsWith('2.'), 'do not force Kotlin 2.x on Expo 52');
+  console.log('PASS expo 52 kotlin (no forced 2.x)');
+
+  const { FEATURE_PRO_IA } = await import('../src/feature-flags.js');
+  assert.equal(FEATURE_PRO_IA, false);
+  console.log('PASS feature flag Pro IA off on launch');
 
   // required screens exist
   for (const f of [
@@ -132,7 +169,12 @@ await (async () => {
     'app/calculadora-maquininha.js',
     'src/ia-rascunho.js',
     'src/componentes/AssistenteIA.js',
+    'src/componentes/SeletorModelos.js',
+    'src/feature-flags.js',
     'privacy-policy.html',
+    'CLOSED_TESTING_RUNBOOK.md',
+    'plugins/withBillingVersion.js',
+    'scripts/patch-billing-version.mjs',
   ]) {
     assert.ok(fs.existsSync(new URL('../' + f, import.meta.url)), `missing ${f}`);
   }

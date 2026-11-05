@@ -18,6 +18,7 @@ import {
   consumirCreditoIa,
 } from '../assinatura';
 import { gerarRascunhoIa } from '../ia-rascunho';
+import { FEATURE_PRO_IA } from '../feature-flags';
 
 const DEMO_IA_KEY = 'orcapro_ia_demo_gratis_usada';
 
@@ -233,6 +234,8 @@ export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
     }
     processar({ origem: 'texto', textoUsuario: textoHint });
   }
+
+  if (!FEATURE_PRO_IA) return null;
 
   const total = saldo?.total ?? '…';
 

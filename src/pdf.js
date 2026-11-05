@@ -27,7 +27,11 @@ import { formatarReais } from './calculos';
  * @param {object} config     - configurações do técnico (nome, pix_key, etc.)
  * @returns {string} uri      - caminho do arquivo PDF no celular
  */
-export async function gerarPDF(orcamento, itens, config) {
+/**
+ * @param {object} [opcoes]
+ * @param {boolean} [opcoes.mostrarMarcaFree] — badge Free no rodape (default false)
+ */
+export async function gerarPDF(orcamento, itens, config, opcoes = {}) {
   let qrCodeUrl = null;
   if (config.pix_key) {
     try {
@@ -48,7 +52,7 @@ export async function gerarPDF(orcamento, itens, config) {
     }
   }
 
-  const html = montarHTML(orcamento, itens, config, qrCodeUrl);
+  const html = montarHTML(orcamento, itens, config, qrCodeUrl, opcoes);
 
   // Converte HTML → PDF (igual ao DOMPDF no PHP)
   const { uri } = await Print.printToFileAsync({
@@ -87,9 +91,10 @@ export async function compartilharPDF(uri) {
 // PHP analogy: como montar uma view com ob_start() + include()
 // ─────────────────────────────────────────
 
-function montarHTML(orcamento, itens, config, qrCodeUrl = null) {
+function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
   const hoje          = new Date().toLocaleDateString('pt-BR');
   const validade      = calcularDataValidade(orcamento.validade_dias);
+  const marcaFree     = !!opcoes.mostrarMarcaFree;
 
   // ── Linhas da tabela de itens ──────────────────────────────────
   const linhasItens = itens.map((item, i) => `
@@ -363,9 +368,12 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null) {
     Peças e materiais fornecidos pelo cliente não estão cobertos por esta garantia.
   </div>
 
-  <!-- RODAPÉ -->
+  <!-- RODAPE -->
   <div class="rodape">
-    Orçamento gerado pelo OrçaPro · orçamento válido por ${orcamento.validade_dias} dias a partir da data de emissão
+    ${marcaFree
+      ? 'Gerado no OrcaPro Free · atualize para Permanente e remova esta marca · '
+      : 'Orcamento gerado pelo OrcaPro · '}
+    valido por ${orcamento.validade_dias} dias a partir da data de emissao
   </div>
 
 </body>

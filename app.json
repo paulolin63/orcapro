@@ -29,10 +29,6 @@
       "playStoreUrl": "https://play.google.com/store/apps/details?id=com.orcapro.myapp"
     },
     "plugins": [
-      [
-        "./plugins/withBillingVersion",
-        "8.0.0"
-      ],
       "expo-router",
       "expo-sqlite",
       "expo-secure-store",
@@ -52,6 +48,10 @@
         {
           "paymentProvider": "Play Store"
         }
+      ],
+      [
+        "./plugins/withBillingVersion",
+        "8.0.0"
       ],
       [
         "expo-image-picker",

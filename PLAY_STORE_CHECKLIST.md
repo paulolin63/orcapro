@@ -4,13 +4,16 @@ Atualizado apos smoke + expo-doctor + Metro Android export.
 
 ## Automatizado (ja passou nesta maquina)
 
-- [x] `npm run test:smoke` — Pix, calculos, QR, SKUs, telas
-- [x] `npx expo-doctor` — 18/18
-- [x] `npx expo export --platform android` — bundle OK (1181 modules)
+- [x] `npm run test:smoke` — Pix, calculos, QR, SKUs, telas, Billing 8, feature flags
+- [x] Play Billing Library forcado para **8.0.0** (plugin + postinstall)
+- [x] `versionCode` **3** (nao reenviar AAB do code 2 com Billing 7)
 - [x] Rota `calculadora-maquininha` criada
-- [x] Permissoes legadas bloqueadas (storage + RECORD_AUDIO)
+- [x] Permissoes legadas bloqueadas (storage)
 - [x] Icon 512x512 / splash 1080x1920
-- [x] Hybrid IAP SKUs no codigo: lifetime / mensal / anual
+- [x] Hybrid IAP SKUs no codigo: lifetime / mensal / anual (Pro IA hide via flag)
+- [x] Modelos Pro + watermark Free no PDF
+- [x] Keystore `.jks` removido do tree (ver `docs/CREDENTIALS.md`)
+- [x] Privacy atualizada (Gemini) — falta URL HTTPS publica
 
 ## Bloqueado sem a sua conta (nao da pra fazer daqui)
 

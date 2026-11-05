@@ -46,7 +46,7 @@
   <div class="container">
     <div class="badge">Em conformidade com a LGPD (Lei nº 13.709/2018)</div>
     <h1>Política de Privacidade — OrçaPro</h1>
-    <p><strong>Última atualização:</strong> 2 de novembro de 2026</p>
+    <p><strong>Última atualização:</strong> 5 de novembro de 2026</p>
 
     <p>O <strong>OrçaPro</strong> foi desenvolvido com o compromisso fundamental de respeitar e proteger a sua privacidade. Esta Política de Privacidade descreve como as informações são tratadas pelo nosso aplicativo.</p>
 
@@ -74,11 +74,21 @@
     <h2>5. Compartilhamento de Arquivos PDF</h2>
     <p>Ao optar por compartilhar um orçamento em PDF via WhatsApp, e-mail ou outro canal, a ação é realizada pelo sistema nativo de compartilhamento do seu sistema operacional Android. O envio ocorre diretamente entre o seu aparelho e o destinatário escolhido.</p>
 
-    <h2>7. Permissões de Microfone e Câmera (Assistente de Voz e Foto)</h2>
-    <p>O aplicativo solicita permissões específicas apenas quando você decide utilizar os recursos opcionais do Assistente IA:</p>
+    <h2>6. Assistente IA e Google Gemini (opcional)</h2>
+    <p>Quando o recurso de Assistente IA estiver ativo no aplicativo e você configurar uma chave da API Google Gemini nas Configurações (ou quando o OrçaPro processar o pedido via provedor Google), o seguinte pode ser enviado aos servidores da <strong>Google LLC</strong> (<code>generativelanguage.googleapis.com</code>):</p>
     <ul>
-      <li><strong>Microfone (RECORD_AUDIO):</strong> Utilizado exclusivamente no momento em que você pressiona o botão de ditar por voz para transcrever os itens e valores do orçamento. O áudio é processado para extração técnica dos itens e não é gravado permanentemente nem compartilhado com terceiros para fins publicitários.</li>
-      <li><strong>Câmera e Fotos (CAMERA / READ_MEDIA_IMAGES):</strong> Utilizadas exclusivamente quando você escolhe fotografar materiais ou selecionar a logomarca da sua empresa para estampar no cabeçalho do PDF.</li>
+      <li>Áudio ditado para gerar rascunho de orçamento;</li>
+      <li>Texto digitado como contexto do rascunho;</li>
+      <li>Imagens de materiais/notas, se você optar por enviar foto.</li>
+    </ul>
+    <p>Esses dados são usados apenas para extrair itens e valores do orçamento. Sem chave / sem uso do Assistente IA, o processamento permanece local no aparelho (extrator offline). A chave Gemini que você informa fica apenas no armazenamento seguro do aparelho e não é enviada a servidores do OrçaPro.</p>
+    <p>Consulte também a política de privacidade da Google para o uso da API Generative Language.</p>
+
+    <h2>7. Permissões de Microfone e Câmera (Assistente de Voz e Foto)</h2>
+    <p>O aplicativo solicita permissões específicas apenas quando você decide utilizar os recursos opcionais do Assistente IA ou a logomarca:</p>
+    <ul>
+      <li><strong>Microfone (RECORD_AUDIO):</strong> usado ao ditar orçamento por voz. O áudio pode ser enviado à Google Gemini se o Assistente IA com API estiver ativo (ver seção 6). Não usamos áudio para publicidade.</li>
+      <li><strong>Câmera e Fotos (CAMERA / READ_MEDIA_IMAGES):</strong> fotografar materiais para o Assistente IA ou selecionar a logomarca da empresa no PDF.</li>
     </ul>
 
     <h2>8. Direitos do Usuário (LGPD)</h2>

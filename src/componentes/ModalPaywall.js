@@ -22,6 +22,7 @@ import {
   skuEhAssinaturaIa,
   skuEhPackIa,
 } from '../assinatura';
+import { FEATURE_PRO_IA } from '../feature-flags';
 
 export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
   const [carregando, setCarregando] = useState(false);
@@ -174,7 +175,9 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
               Continue gerando orcamentos
             </Text>
             <Text variant="bodyMedium" style={estilos.subtitulo}>
-              Limite free: 3 orcamentos/mes. Escolha PDF ilimitado ou Pro com IA.
+              {FEATURE_PRO_IA
+                ? 'Limite free: 3 orcamentos/mes. Escolha PDF ilimitado ou Pro com IA.'
+                : 'Limite free: 3 orcamentos/mes. Desbloqueie PDF, Pix e modelos ilimitados.'}
             </Text>
           </View>
 
@@ -190,7 +193,7 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <Text style={estilos.planoTituloDestaque}>Permanente</Text>
                 <Text style={estilos.planoDesc}>
-                  Orcamentos + PDF + Pix ilimitados. Sem assinatura.
+                  Orcamentos + PDF + Pix + modelos ilimitados. Sem assinatura.
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
@@ -200,66 +203,67 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
             </Card.Content>
           </Card>
 
-          {/* Pro IA Mensal */}
-          <Card
-            style={estilos.cardPlano}
-            onPress={() => comprarAssinatura(IAP_SKUS.MENSAL)}
-          >
-            <Card.Content style={estilos.conteudoPlano}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={estilos.planoTitulo}>Pro IA Mensal</Text>
-                <Text style={estilos.planoDesc}>
-                  Tudo do Permanente + {CREDITOS_IA_ASSINATURA_MES}x voz ou foto → orcamento / mes
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={estilos.preco}>{precos[IAP_SKUS.MENSAL]}</Text>
-                <Text style={estilos.precoHint}>/ mes</Text>
-              </View>
-            </Card.Content>
-          </Card>
+          {FEATURE_PRO_IA ? (
+            <>
+              <Card
+                style={estilos.cardPlano}
+                onPress={() => comprarAssinatura(IAP_SKUS.MENSAL)}
+              >
+                <Card.Content style={estilos.conteudoPlano}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={estilos.planoTitulo}>Pro IA Mensal</Text>
+                    <Text style={estilos.planoDesc}>
+                      Tudo do Permanente + {CREDITOS_IA_ASSINATURA_MES}x voz ou foto → orcamento / mes
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={estilos.preco}>{precos[IAP_SKUS.MENSAL]}</Text>
+                    <Text style={estilos.precoHint}>/ mes</Text>
+                  </View>
+                </Card.Content>
+              </Card>
 
-          {/* Pro IA Anual */}
-          <Card
-            style={estilos.cardPlano}
-            onPress={() => comprarAssinatura(IAP_SKUS.ANUAL)}
-          >
-            <Card.Content style={estilos.conteudoPlano}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={estilos.planoTitulo}>Pro IA Anual</Text>
-                <Text style={estilos.planoDesc}>
-                  Mesmo Pro IA com desconto (~37% vs 12x mensal)
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={estilos.preco}>{precos[IAP_SKUS.ANUAL]}</Text>
-                <Text style={estilos.precoHint}>/ ano</Text>
-              </View>
-            </Card.Content>
-          </Card>
+              <Card
+                style={estilos.cardPlano}
+                onPress={() => comprarAssinatura(IAP_SKUS.ANUAL)}
+              >
+                <Card.Content style={estilos.conteudoPlano}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={estilos.planoTitulo}>Pro IA Anual</Text>
+                    <Text style={estilos.planoDesc}>
+                      Mesmo Pro IA com desconto (~37% vs 12x mensal)
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={estilos.preco}>{precos[IAP_SKUS.ANUAL]}</Text>
+                    <Text style={estilos.precoHint}>/ ano</Text>
+                  </View>
+                </Card.Content>
+              </Card>
 
-          {/* Pacote */}
-          <Card
-            style={estilos.cardPlano}
-            onPress={() => comprarProduto(IAP_SKUS.PACK_IA)}
-          >
-            <Card.Content style={estilos.conteudoPlano}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={estilos.planoTitulo}>Pacote IA</Text>
-                <Text style={estilos.planoDesc}>
-                  +{CREDITOS_IA_PACK} usos de voz/foto (sem assinatura). Ideal com Permanente.
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={estilos.preco}>{precos[IAP_SKUS.PACK_IA]}</Text>
-                <Text style={estilos.precoHint}>avulso</Text>
-              </View>
-            </Card.Content>
-          </Card>
-
-          <Text style={estilos.notaIa}>
-            Recursos de voz/foto por IA entram na v1.1. Creditos so sao cobrados quando o recurso estiver ativo.
-          </Text>
+              <Card
+                style={estilos.cardPlano}
+                onPress={() => comprarProduto(IAP_SKUS.PACK_IA)}
+              >
+                <Card.Content style={estilos.conteudoPlano}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={estilos.planoTitulo}>Pacote IA</Text>
+                    <Text style={estilos.planoDesc}>
+                      +{CREDITOS_IA_PACK} usos de voz/foto (sem assinatura). Ideal com Permanente.
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={estilos.preco}>{precos[IAP_SKUS.PACK_IA]}</Text>
+                    <Text style={estilos.precoHint}>avulso</Text>
+                  </View>
+                </Card.Content>
+              </Card>
+            </>
+          ) : (
+            <Text style={estilos.notaIa}>
+              Pro IA (voz/foto) chega na v1.1 com API propria. No launch: Permanente = PDF e modelos ilimitados.
+            </Text>
+          )}
 
           <Button
             mode="contained"
