@@ -18,7 +18,7 @@ Atualizado apos smoke + expo-doctor + Metro Android export.
 - [ ] `eas init` / projectId no `app.json`
 - [ ] `eas build --platform android --profile production` → `.aab`
 - [ ] Privacy Policy em URL **HTTPS publica** (arquivo local: `privacy-policy.html`)
-- [ ] Google Play Console: app `com.paulolin.orcapro`
+- [ ] Google Play Console: app `com.orcapro.myapp`
 - [ ] Criar produtos (ver `MONETIZACAO.md`):
   - `orcapro_pro_lifetime` (R$ 29,90, nao consumivel) — PDF ilimitado
   - `orcapro_pro_ia_mensal` (R$ 19,90/mes) — ilimitado + 20 IA

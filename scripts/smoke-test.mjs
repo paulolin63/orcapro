@@ -118,7 +118,7 @@ await (async () => {
   console.log('PASS assinatura skus present');
 
   const appJson = JSON.parse(fs.readFileSync(new URL('../app.json', import.meta.url), 'utf8'));
-  assert.equal(appJson.expo.android.package, 'com.paulolin.orcapro');
+  assert.equal(appJson.expo.android.package, 'com.orcapro.myapp');
   assert.ok(appJson.expo.plugins.includes('expo-secure-store') || appJson.expo.plugins.some((p) => p === 'expo-secure-store' || p[0] === 'react-native-iap'));
   console.log('PASS app.json package/plugins');
 

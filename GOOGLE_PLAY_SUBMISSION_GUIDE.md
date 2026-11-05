@@ -1,6 +1,6 @@
 # Guia de Publicação e Homologação — Google Play Store (2026)
 > **Projeto:** OrçaPro (v1.0.0)  
-> **Package ID:** `com.paulolin.orcapro`  
+> **Package ID:** `com.orcapro.myapp`  
 > **Status:** Pronto para Build e Submissão ao Teste Fechado (20 Usuários × 14 Dias)
 
 ---
