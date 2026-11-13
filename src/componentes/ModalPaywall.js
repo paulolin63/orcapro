@@ -1,8 +1,8 @@
 /**
  * ModalPaywall — Free esgotou cota de orcamentos.
- * Permanente = PDF ilimitado.
- * Pro IA = ilimitado + creditos voz/foto.
- * Pacote = +15 creditos IA (consumivel).
+ * Permanente (1x) = PDF/orcamentos ilimitados + funil/stats. SEM IA.
+ * Pro IA (mensal/anual) = ilimitado + creditos voz/foto.
+ * Pacote = +15 creditos IA (consumivel; nao vem no Permanente).
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -16,7 +16,6 @@ import {
   restaurarCompras,
   marcarEntitlementLocal,
   creditarPacoteIa,
-  CREDITOS_IA_ASSINATURA_MES,
   CREDITOS_IA_PACK,
   skuEhLifetimeetime,
   skuEhAssinaturaIa,
@@ -72,17 +71,14 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
             temAssinaturaIa: false,
             source: 'lifetime',
           });
-          Alert.alert('Sucesso!', 'Orcamentos e PDF ilimitados desbloqueados.');
+          Alert.alert('Permanente', 'Desbloqueado.');
         } else if (skuEhAssinaturaIa(id)) {
           await marcarEntitlementLocal({
             ilimitadoOrcamentos: true,
             temAssinaturaIa: true,
             source: id.includes('anual') ? 'anual' : 'mensal',
           });
-          Alert.alert(
-            'Pro IA ativo!',
-            `Ilimitado + ${CREDITOS_IA_ASSINATURA_MES} creditos de voz/foto por mes.`
-          );
+          Alert.alert('Pro IA', 'Ativo.');
         } else {
           return;
         }
@@ -150,13 +146,11 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
     try {
       const r = await restaurarCompras();
       if (r.ehPro) {
-        Alert.alert('Restaurado', r.temAssinaturaIa
-          ? 'Pro IA reconhecido.'
-          : 'Desbloqueio permanente reconhecido.');
+        Alert.alert('Restaurado', 'Ok.');
         if (onSucesso) onSucesso();
         onFechar();
       } else {
-        Alert.alert('Nenhuma compra ativa', 'Esta conta Google nao tem Pro do OrçaPro.');
+        Alert.alert('Sem compras', 'Nada encontrado nesta conta.');
       }
     } catch (e) {
       Alert.alert('Erro', 'Nao foi possivel conectar ao Google Play.');
@@ -170,38 +164,17 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
       <Modal visible={visivel} onDismiss={onFechar} contentContainerStyle={estilos.modal}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={estilos.topo}>
-            <Text style={{ fontSize: 44, textAlign: 'center' }}>👑</Text>
             <Text variant="headlineSmall" style={estilos.titulo}>
-              Continue gerando orcamentos
+              Permanente
             </Text>
-            <Text variant="bodyMedium" style={estilos.subtitulo}>
-              {FEATURE_PRO_IA
-                ? 'Limite free: 3 orcamentos/mes. Escolha PDF ilimitado ou Pro com IA.'
-                : 'Limite free: 3 orcamentos/mes. Desbloqueie PDF, Pix e modelos ilimitados.'}
-            </Text>
-          </View>
-
-          {/* Permanente */}
-          <Card
-            style={[estilos.cardPlano, estilos.cardPlanoDestaque]}
-            onPress={() => comprarProduto(IAP_SKUS.LIFETIME)}
-          >
-            <View style={estilos.badge}>
-              <Text style={estilos.badgeTxt}>MAIS ESCOLHIDO</Text>
+            <Text style={estilos.precoDestaque}>{precos[IAP_SKUS.LIFETIME]}</Text>
+            <View style={estilos.beneficios}>
+              <Text style={estilos.beneficio}>Orcamentos e PDF ilimitados</Text>
+              <Text style={estilos.beneficio}>Modelos reutilizaveis</Text>
+              <Text style={estilos.beneficio}>Estatisticas de fechamento (tempo, faixas, follow-up)</Text>
+              <Text style={estilos.beneficio}>Sem IA — voz/foto so na assinatura Pro IA</Text>
             </View>
-            <Card.Content style={estilos.conteudoPlano}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={estilos.planoTituloDestaque}>Permanente</Text>
-                <Text style={estilos.planoDesc}>
-                  Orcamentos + PDF + Pix + modelos ilimitados. Sem assinatura.
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={estilos.precoDestaque}>{precos[IAP_SKUS.LIFETIME]}</Text>
-                <Text style={estilos.precoHint}>uma vez</Text>
-              </View>
-            </Card.Content>
-          </Card>
+          </View>
 
           {FEATURE_PRO_IA ? (
             <>
@@ -210,16 +183,8 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
                 onPress={() => comprarAssinatura(IAP_SKUS.MENSAL)}
               >
                 <Card.Content style={estilos.conteudoPlano}>
-                  <View style={{ flex: 1, paddingRight: 8 }}>
-                    <Text style={estilos.planoTitulo}>Pro IA Mensal</Text>
-                    <Text style={estilos.planoDesc}>
-                      Tudo do Permanente + {CREDITOS_IA_ASSINATURA_MES}x voz ou foto → orcamento / mes
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={estilos.preco}>{precos[IAP_SKUS.MENSAL]}</Text>
-                    <Text style={estilos.precoHint}>/ mes</Text>
-                  </View>
+                  <Text style={estilos.planoTitulo}>Pro IA Mensal</Text>
+                  <Text style={estilos.preco}>{precos[IAP_SKUS.MENSAL]}</Text>
                 </Card.Content>
               </Card>
 
@@ -228,16 +193,8 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
                 onPress={() => comprarAssinatura(IAP_SKUS.ANUAL)}
               >
                 <Card.Content style={estilos.conteudoPlano}>
-                  <View style={{ flex: 1, paddingRight: 8 }}>
-                    <Text style={estilos.planoTitulo}>Pro IA Anual</Text>
-                    <Text style={estilos.planoDesc}>
-                      Mesmo Pro IA com desconto (~37% vs 12x mensal)
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={estilos.preco}>{precos[IAP_SKUS.ANUAL]}</Text>
-                    <Text style={estilos.precoHint}>/ ano</Text>
-                  </View>
+                  <Text style={estilos.planoTitulo}>Pro IA Anual</Text>
+                  <Text style={estilos.preco}>{precos[IAP_SKUS.ANUAL]}</Text>
                 </Card.Content>
               </Card>
 
@@ -246,24 +203,12 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
                 onPress={() => comprarProduto(IAP_SKUS.PACK_IA)}
               >
                 <Card.Content style={estilos.conteudoPlano}>
-                  <View style={{ flex: 1, paddingRight: 8 }}>
-                    <Text style={estilos.planoTitulo}>Pacote IA</Text>
-                    <Text style={estilos.planoDesc}>
-                      +{CREDITOS_IA_PACK} usos de voz/foto (sem assinatura). Ideal com Permanente.
-                    </Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={estilos.preco}>{precos[IAP_SKUS.PACK_IA]}</Text>
-                    <Text style={estilos.precoHint}>avulso</Text>
-                  </View>
+                  <Text style={estilos.planoTitulo}>Pacote IA</Text>
+                  <Text style={estilos.preco}>{precos[IAP_SKUS.PACK_IA]}</Text>
                 </Card.Content>
               </Card>
             </>
-          ) : (
-            <Text style={estilos.notaIa}>
-              Pro IA (voz/foto) chega na v1.1 com API propria. No launch: Permanente = PDF e modelos ilimitados.
-            </Text>
-          )}
+          ) : null}
 
           <Button
             mode="contained"
@@ -272,11 +217,11 @@ export default function ModalPaywall({ visivel, onFechar, onSucesso }) {
             disabled={carregando}
             onPress={() => comprarProduto(IAP_SKUS.LIFETIME)}
           >
-            Desbloquear permanente
+            Desbloquear
           </Button>
 
           <Button mode="text" onPress={onRestaurar} disabled={carregando}>
-            Restaurar compras
+            Restaurar
           </Button>
           <Button mode="text" textColor="#888" onPress={onFechar}>
             Voltar
@@ -296,8 +241,9 @@ const estilos = StyleSheet.create({
     maxHeight: '90%',
   },
   topo: { alignItems: 'center', marginBottom: 14 },
-  titulo: { fontWeight: '800', color: '#162544', marginTop: 8, textAlign: 'center' },
-  subtitulo: { textAlign: 'center', color: '#666', marginTop: 6, fontSize: 13 },
+  titulo: { fontWeight: '800', color: '#162544', textAlign: 'center' },
+  beneficios: { marginTop: 12, alignSelf: 'stretch' },
+  beneficio: { fontSize: 13, color: '#475569', marginTop: 4, textAlign: 'left' },
   cardPlano: {
     marginBottom: 10,
     borderRadius: 12,
@@ -309,17 +255,6 @@ const estilos = StyleSheet.create({
     borderColor: '#FFA000',
     backgroundColor: '#FFFDF5',
   },
-  badge: {
-    position: 'absolute',
-    top: -1,
-    right: 12,
-    backgroundColor: '#FFA000',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    zIndex: 2,
-  },
-  badgeTxt: { color: '#fff', fontSize: 10, fontWeight: '800' },
   conteudoPlano: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -328,10 +263,7 @@ const estilos = StyleSheet.create({
   },
   planoTitulo: { fontSize: 15, fontWeight: '800', color: '#162544' },
   planoTituloDestaque: { fontSize: 15, fontWeight: '800', color: '#B45309' },
-  planoDesc: { fontSize: 11, color: '#666', marginTop: 2 },
   preco: { fontSize: 17, fontWeight: '800', color: '#162544' },
-  precoDestaque: { fontSize: 17, fontWeight: '800', color: '#B45309' },
-  precoHint: { fontSize: 10, color: '#666' },
-  notaIa: { fontSize: 11, color: '#888', textAlign: 'center', marginVertical: 8, lineHeight: 15 },
+  precoDestaque: { fontSize: 17, fontWeight: '800', color: '#B45309', marginTop: 4 },
   botao: { backgroundColor: '#162544', borderRadius: 10, marginTop: 4, paddingVertical: 4 },
 });

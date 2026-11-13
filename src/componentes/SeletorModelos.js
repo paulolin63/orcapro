@@ -46,12 +46,9 @@ export default function SeletorModelos({ onAplicar, onPrecisaPro }) {
     return (
       <Card style={estilos.card}>
         <Card.Content>
-          <Text style={estilos.titulo}>Modelos de servico</Text>
-          <Text style={estilos.dica}>
-            Salve kits reutilizaveis (ex: Instalacao Split 12k) no Permanente.
-          </Text>
+          <Text style={estilos.titulo}>Modelos</Text>
           <Button mode="outlined" onPress={() => onPrecisaPro && onPrecisaPro()}>
-            Desbloquear modelos
+            Desbloquear
           </Button>
         </Card.Content>
       </Card>
@@ -69,12 +66,8 @@ export default function SeletorModelos({ onAplicar, onPrecisaPro }) {
   return (
     <Card style={estilos.card}>
       <Card.Content>
-        <Text style={estilos.titulo}>Modelos salvos</Text>
-        {modelos.length === 0 ? (
-          <Text style={estilos.dica}>
-            Nenhum modelo ainda. No detalhe de um orcamento, toque em "Salvar como modelo".
-          </Text>
-        ) : (
+        <Text style={estilos.titulo}>Modelos</Text>
+        {modelos.length === 0 ? null : (
           <View style={estilos.lista}>
             {modelos.map((m) => (
               <View key={m.id} style={estilos.linha}>
@@ -121,7 +114,6 @@ const estilos = StyleSheet.create({
     borderColor: '#FFE0A3',
   },
   titulo: { fontWeight: '800', color: '#162544', fontSize: 14, marginBottom: 4 },
-  dica: { fontSize: 12, color: '#666', marginBottom: 8, lineHeight: 16 },
   lista: { gap: 4 },
   linha: { flexDirection: 'row', alignItems: 'center' },
   chip: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#FFA000', flexShrink: 1 },

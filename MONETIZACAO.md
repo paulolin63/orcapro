@@ -8,7 +8,7 @@ Se a compra unica ja libera PDF ilimitado, a assinatura mensal **precisa vender 
 | Plano | Preco | Orcamentos/PDF | Creditos IA / mes | Quem e pra |
 |-------|-------|----------------|-------------------|------------|
 | Free | R$ 0 | 3 / mes | 0 | Testar o fluxo |
-| Permanente | R$ 29,90 **uma vez** | Ilimitado | 0 (pode comprar pacote) | Usa todo dia, sem AI |
+| Permanente | R$ 29,90 **uma vez** | Ilimitado + funil de fechamento (local) | **0 — sem IA** | Usa todo dia; quer IA → assinatura ou pack |
 | Pro IA Mensal | R$ 19,90 / mes | Ilimitado | **20** | Quer voz/foto no orcamento |
 | Pro IA Anual | R$ 149,90 / ano (~R$ 12,49/mes) | Ilimitado | **20** / mes | Mesmo Pro, desconto |
 | Pacote IA | R$ 9,90 **consumivel** | — | **+15** (nao expira no mes; consome sob demanda) | Free/Permanente que testa AI |
@@ -20,7 +20,20 @@ Se a compra unica ja libera PDF ilimitado, a assinatura mensal **precisa vender 
 ### O que NAO gasta credito
 - Digitar orcamento na mao
 - Gerar PDF / Pix / WhatsApp
-- Maquininha / estatisticas
+- Maquininha / estatisticas do mes
+- Funil de fechamento (beneficio Lifetime; dados so no aparelho)
+
+### Permanente inclui (alem do ilimitado)
+- Modelos reutilizaveis
+- Estatisticas de fechamento: tempo medio ate aceitar, faixas de preco, taxa por modelo, lista de follow-up
+- Timestamps (`enviado_em` / `fechado_em`) gravados para todos; UI do funil so com entitlement
+
+### Permanente NAO inclui
+- Voz/foto → orcamento (IA)
+- Creditos IA mensais
+- Pack IA (e compra separada se `FEATURE_PRO_IA`)
+
+Regra: **1x = PDF + stats; mensal/anual = PDF + IA.** `podeUsarIA` exige assinatura IA ativa ou saldo de pack — nunca so Lifetime.
 
 ## Por que esses numeros
 - Custo estimado por uso IA (Whisper/Vision + margem): ~R$ 0,30–0,50.
@@ -46,13 +59,13 @@ Se a compra unica ja libera PDF ilimitado, a assinatura mensal **precisa vender 
 4. Sem server: contadores no SecureStore (soft). Com server depois: validar receipt + debitar credito.
 
 ## UX paywall (ordem)
-1. Permanente — “PDF e orcamentos ilimitados”
+1. Permanente — “PDF ilimitados + modelos + estatisticas de fechamento”
 2. Pro IA Mensal — “Ilimitado + 20x voz/foto por IA”
 3. Pro IA Anual — badge economia
 4. Pacote 15 creditos — secundario / na tela de IA
 
 ## Faseamento
-- **v1 (agora):** `FEATURE_PRO_IA=false` em `src/feature-flags.js` — paywall so **Permanente**. Modelos reutilizaveis + PDF sem marca Free no Lifetime. AssistenteIA / SKUs IA escondidos.
+- **v1 (agora):** `FEATURE_PRO_IA=false` em `src/feature-flags.js` — paywall so **Permanente**. Modelos reutilizaveis + PDF sem marca Free + funil de fechamento no Lifetime. AssistenteIA / SKUs IA escondidos.
 - **v1.1:** `FEATURE_PRO_IA=true` + proxy Gemini/Whisper proprio (nao BYO key). Ative SKUs `*_ia_*` no Console.
 - UI voz/foto + rascunho em `AssistenteIA` / `ia-rascunho.js` ja existem; so ligue a flag quando a API for de verdade.
 

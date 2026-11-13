@@ -5,8 +5,8 @@
 
 import { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Alert, TextInput as RNTextInput } from 'react-native';
-import { Text, Card, Chip, Button, Divider, ActivityIndicator, Portal, Modal } from 'react-native-paper';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Text, Card, Chip, Button, Divider, ActivityIndicator, Portal, Modal, Menu, IconButton } from 'react-native-paper';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import {
   buscarOrcamento,
   atualizarStatusOrcamento,
@@ -14,6 +14,8 @@ import {
   lerTodasConfigs,
   criarOrcamento,
   salvarModelo,
+  marcarEnviado,
+  definirFollowup,
 } from '@src/banco-de-dados';
 import { formatarReais } from '@src/calculos';
 import { gerarPDF, compartilharPDF } from '@src/pdf';
@@ -41,6 +43,8 @@ export default function DetalheOrcamento() {
   const [paywall, setPaywall] = useState(false);
   const [modalModelo, setModalModelo] = useState(false);
   const [nomeModelo, setNomeModelo] = useState('');
+  const [menuAberto, setMenuAberto] = useState(false);
+  const [statusAberto, setStatusAberto] = useState(false);
 
   useEffect(() => {
     carregar();
@@ -64,11 +68,45 @@ export default function DetalheOrcamento() {
       const mostrarMarcaFree = FEATURE_WATERMARK_FREE && !ent.ilimitadoOrcamentos;
       const pdfUri = await gerarPDF(orcamento, orcamento.itens, config, { mostrarMarcaFree });
       await compartilharPDF(pdfUri);
+      await marcarEnviado(id);
+      carregar();
     } catch (e) {
       Alert.alert('Erro', 'Nao foi possivel gerar ou enviar o PDF.');
     } finally {
       setGerandoPdf(false);
     }
+  }
+
+  function agendarFollowup() {
+    Alert.alert('Follow-up', 'Quando cobrar de novo?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: '+3 dias',
+        onPress: async () => {
+          const d = new Date();
+          d.setDate(d.getDate() + 3);
+          await definirFollowup(id, d.toISOString().slice(0, 10));
+          carregar();
+        },
+      },
+      {
+        text: '+7 dias',
+        onPress: async () => {
+          const d = new Date();
+          d.setDate(d.getDate() + 7);
+          await definirFollowup(id, d.toISOString().slice(0, 10));
+          carregar();
+        },
+      },
+      {
+        text: 'Limpar',
+        style: 'destructive',
+        onPress: async () => {
+          await definirFollowup(id, null);
+          carregar();
+        },
+      },
+    ]);
   }
 
   async function duplicarOrcamento() {
@@ -103,6 +141,7 @@ export default function DetalheOrcamento() {
           lucro_pct: orcamento.lucro_pct,
           total: orcamento.total,
           notas: orcamento.notas,
+          modelo_id: orcamento.modelo_id || null,
         },
         itens
       );
@@ -177,39 +216,89 @@ export default function DetalheOrcamento() {
 
   return (
     <ScrollView style={estilos.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Menu
+              visible={menuAberto}
+              onDismiss={() => setMenuAberto(false)}
+              anchor={
+                <IconButton
+                  icon="dots-vertical"
+                  iconColor="#fff"
+                  size={22}
+                  onPress={() => setMenuAberto(true)}
+                />
+              }
+            >
+              <Menu.Item
+                onPress={() => { setMenuAberto(false); setStatusAberto((v) => !v); }}
+                title="Status"
+                leadingIcon="flag-outline"
+              />
+              <Menu.Item
+                onPress={() => { setMenuAberto(false); agendarFollowup(); }}
+                title="Follow-up"
+                leadingIcon="calendar-clock"
+              />
+              <Menu.Item
+                onPress={() => { setMenuAberto(false); duplicarOrcamento(); }}
+                title="Duplicar"
+                leadingIcon="content-copy"
+                disabled={busy}
+              />
+              {FEATURE_MODELOS_PRO ? (
+                <Menu.Item
+                  onPress={() => { setMenuAberto(false); abrirSalvarModelo(); }}
+                  title="Salvar modelo"
+                  leadingIcon="bookmark-outline"
+                  disabled={busy}
+                />
+              ) : null}
+              <Menu.Item
+                onPress={() => { setMenuAberto(false); confirmarExclusao(); }}
+                title="Excluir"
+                leadingIcon="delete-outline"
+              />
+            </Menu>
+          ),
+        }}
+      />
+
       <View style={estilos.topo}>
-        <View>
+        <View style={{ flex: 1, paddingRight: 12 }}>
           <Text variant="headlineSmall" style={{ fontWeight: '800', color: '#162544' }}>
-            #{String(orcamento.id).padStart(4, '0')}
+            {orcamento.cliente_nome}
           </Text>
-          <Text variant="bodySmall" style={{ color: '#666' }}>
-            Criado em: {new Date(orcamento.criado_em).toLocaleDateString('pt-BR')}
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#162544', marginTop: 4 }}>
+            {formatarReais(orcamento.total)}
           </Text>
+          {orcamento.followup_em ? (
+            <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+              Follow-up {String(orcamento.followup_em).slice(0, 10)}
+            </Text>
+          ) : null}
         </View>
         <Chip style={{ backgroundColor: statusInfo.bg }} textStyle={{ color: statusInfo.cor, fontWeight: '700' }}>
           {statusInfo.label}
         </Chip>
       </View>
 
-      <Card style={estilos.card}>
-        <Card.Content>
-          <Text variant="titleMedium" style={{ fontWeight: '700', marginBottom: 4 }}>
-            {orcamento.cliente_nome}
-          </Text>
-          {orcamento.cliente_tel ? (
-            <Text style={{ color: '#555', fontSize: 13 }}>{orcamento.cliente_tel}</Text>
-          ) : null}
-          {orcamento.endereco ? (
-            <Text style={{ color: '#555', fontSize: 13, marginTop: 2 }}>{orcamento.endereco}</Text>
-          ) : null}
-        </Card.Content>
-      </Card>
+      {(orcamento.cliente_tel || orcamento.endereco) ? (
+        <Card style={estilos.card}>
+          <Card.Content>
+            {orcamento.cliente_tel ? (
+              <Text style={{ color: '#555', fontSize: 13 }}>{orcamento.cliente_tel}</Text>
+            ) : null}
+            {orcamento.endereco ? (
+              <Text style={{ color: '#555', fontSize: 13, marginTop: 2 }}>{orcamento.endereco}</Text>
+            ) : null}
+          </Card.Content>
+        </Card>
+      ) : null}
 
       <Card style={estilos.card}>
         <Card.Content>
-          <Text variant="titleSmall" style={{ fontWeight: '700', color: '#555', marginBottom: 8 }}>
-            ITENS E SERVICOS
-          </Text>
           {orcamento.itens.map((item, index) => (
             <View key={index} style={estilos.itemLinha}>
               <View style={{ flex: 1 }}>
@@ -234,7 +323,7 @@ export default function DetalheOrcamento() {
           ) : null}
 
           <View style={[estilos.resumoLinha, { marginTop: 6 }]}>
-            <Text style={{ fontSize: 16, fontWeight: '800' }}>TOTAL</Text>
+            <Text style={{ fontSize: 16, fontWeight: '800' }}>Total</Text>
             <Text style={{ fontSize: 18, fontWeight: '800', color: '#162544' }}>
               {formatarReais(orcamento.total)}
             </Text>
@@ -242,35 +331,34 @@ export default function DetalheOrcamento() {
         </Card.Content>
       </Card>
 
-      <Card style={estilos.card}>
-        <Card.Content>
-          <Text variant="titleSmall" style={{ fontWeight: '700', color: '#555', marginBottom: 10 }}>
-            MUDAR STATUS
-          </Text>
-          <View style={estilos.botoesStatus}>
-            <Button
-              mode={orcamento.status === 'fechado' ? 'contained' : 'outlined'}
-              buttonColor={orcamento.status === 'fechado' ? '#1e8e3e' : undefined}
-              textColor={orcamento.status === 'fechado' ? '#fff' : '#1e8e3e'}
-              style={{ flex: 1, borderColor: '#1e8e3e' }}
-              onPress={() => mudarStatus('fechado')}
-            >
-              Fechado
-            </Button>
-            <Button
-              mode={orcamento.status === 'recusado' ? 'contained' : 'outlined'}
-              buttonColor={orcamento.status === 'recusado' ? '#d93025' : undefined}
-              textColor={orcamento.status === 'recusado' ? '#fff' : '#d93025'}
-              style={{ flex: 1, borderColor: '#d93025' }}
-              onPress={() => mudarStatus('recusado')}
-            >
-              Recusado
-            </Button>
-          </View>
-        </Card.Content>
-      </Card>
+      {statusAberto ? (
+        <Card style={estilos.card}>
+          <Card.Content>
+            <View style={estilos.botoesStatus}>
+              <Button
+                mode={orcamento.status === 'fechado' ? 'contained' : 'outlined'}
+                buttonColor={orcamento.status === 'fechado' ? '#1e8e3e' : undefined}
+                textColor={orcamento.status === 'fechado' ? '#fff' : '#1e8e3e'}
+                style={{ flex: 1, borderColor: '#1e8e3e' }}
+                onPress={() => { mudarStatus('fechado'); setStatusAberto(false); }}
+              >
+                Fechado
+              </Button>
+              <Button
+                mode={orcamento.status === 'recusado' ? 'contained' : 'outlined'}
+                buttonColor={orcamento.status === 'recusado' ? '#d93025' : undefined}
+                textColor={orcamento.status === 'recusado' ? '#fff' : '#d93025'}
+                style={{ flex: 1, borderColor: '#d93025' }}
+                onPress={() => { mudarStatus('recusado'); setStatusAberto(false); }}
+              >
+                Recusado
+              </Button>
+            </View>
+          </Card.Content>
+        </Card>
+      ) : null}
 
-      <View style={{ padding: 16, gap: 10, marginBottom: 40 }}>
+      <View style={{ padding: 16, marginBottom: 40 }}>
         <Button
           mode="contained"
           icon="whatsapp"
@@ -279,21 +367,7 @@ export default function DetalheOrcamento() {
           disabled={gerandoPdf || busy}
           style={{ backgroundColor: '#25D366' }}
         >
-          Enviar no WhatsApp
-        </Button>
-
-        <Button mode="outlined" icon="content-copy" onPress={duplicarOrcamento} disabled={busy} loading={busy}>
-          Duplicar orcamento
-        </Button>
-
-        {FEATURE_MODELOS_PRO ? (
-          <Button mode="outlined" icon="bookmark-outline" onPress={abrirSalvarModelo} disabled={busy}>
-            Salvar como modelo
-          </Button>
-        ) : null}
-
-        <Button mode="outlined" textColor="#d93025" style={{ borderColor: '#d93025' }} onPress={confirmarExclusao}>
-          Excluir Orcamento
+          WhatsApp
         </Button>
       </View>
 

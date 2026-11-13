@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { FAB, Text, Chip, Card, Badge, Divider, Searchbar, IconButton } from 'react-native-paper';
+import { FAB, Text, Chip, Card, Divider, Searchbar } from 'react-native-paper';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { listarOrcamentos } from '@src/banco-de-dados';
 import { formatarReais } from '@src/calculos';
@@ -15,10 +15,10 @@ import ModalPaywall from '@src/componentes/ModalPaywall';
 
 // Mapeamento de status → cor e ícone (equivale a um switch/case no PHP)
 const STATUS_CONFIG = {
-  aguardando: { cor: '#f59e0b', label: 'Aguardando',  icone: '⏳' },
-  fechado:    { cor: '#22c55e', label: 'Fechado',     icone: '✅' },
-  recusado:   { cor: '#ef4444', label: 'Recusado',    icone: '❌' },
-  cancelado:  { cor: '#9ca3af', label: 'Cancelado',   icone: '🚫' },
+  aguardando: { cor: '#f59e0b', label: 'Aguardando' },
+  fechado:    { cor: '#22c55e', label: 'Fechado' },
+  recusado:   { cor: '#ef4444', label: 'Recusado' },
+  cancelado:  { cor: '#9ca3af', label: 'Cancelado' },
 };
 
 export default function TelaInicial() {
@@ -91,7 +91,7 @@ export default function TelaInicial() {
                   style={{ backgroundColor: status.cor + '22', marginTop: 4 }}
                   textStyle={{ color: status.cor, fontSize: 10, fontWeight: '700' }}
                 >
-                  {status.icone} {status.label}
+                  {status.label}
                 </Chip>
               </View>
             </View>
@@ -104,12 +104,8 @@ export default function TelaInicial() {
   function ListaVazia() {
     return (
       <View style={estilos.vazio}>
-        <Text style={{ fontSize: 48 }}>📋</Text>
-        <Text variant="titleMedium" style={{ marginTop: 12, color: '#555' }}>
-          Nenhum orçamento ainda
-        </Text>
-        <Text variant="bodySmall" style={{ color: '#888', textAlign: 'center', marginTop: 6 }}>
-          Toque no botão + para criar seu primeiro orçamento
+        <Text variant="titleMedium" style={{ color: '#555' }}>
+          Nenhum orçamento
         </Text>
       </View>
     );
@@ -147,14 +143,10 @@ export default function TelaInicial() {
 
       <Divider />
 
-      {/* Quota / Status Pro */}
       <View style={estilos.linhaQuota}>
-        <Text style={estilos.contador}>
-          {orcamentosFiltrados.length} orçamento{orcamentosFiltrados.length !== 1 ? 's' : ''}
-        </Text>
         {statusQuota.ehPro ? (
           <Chip compact style={{ backgroundColor: '#e6f4ea' }} textStyle={{ color: '#1e8e3e', fontSize: 11, fontWeight: '700' }}>
-            👑 Pro Ilimitado
+            Pro
           </Chip>
         ) : (
           <TouchableOpacity onPress={() => setModalPaywallAberto(true)}>
@@ -163,9 +155,7 @@ export default function TelaInicial() {
               style={{ backgroundColor: statusQuota.restantes === 0 ? '#fce8e6' : '#e8f0fe' }}
               textStyle={{ color: statusQuota.restantes === 0 ? '#d93025' : '#1a73e8', fontSize: 11, fontWeight: '700' }}
             >
-              {statusQuota.restantes === 0
-                ? '⚠️ 0/3 restantes (Desbloquear)'
-                : `⚡ ${statusQuota.restantes}/3 grátis no mês`}
+              {statusQuota.restantes}/3
             </Chip>
           </TouchableOpacity>
         )}
@@ -184,7 +174,7 @@ export default function TelaInicial() {
       {/* Botão flutuante: Novo orçamento */}
       <FAB
         icon="plus"
-        label="Novo Orçamento"
+        label="Novo"
         style={estilos.fab}
         onPress={novoOrcamento}
       />
@@ -204,8 +194,7 @@ const estilos = StyleSheet.create({
   busca:       { margin: 12, marginBottom: 8, elevation: 2, backgroundColor: '#fff' },
   filtros:     { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
   chipFiltro:  { borderRadius: 20 },
-  linhaQuota:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6 },
-  contador:    { fontSize: 12, color: '#888' },
+  linhaQuota:  { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6 },
   card:        { borderRadius: 12, elevation: 2, backgroundColor: '#fff', borderLeftWidth: 4, borderLeftColor: '#162544' },
   cardTopo:    { flexDirection: 'row', alignItems: 'flex-start' },
   vazio:       { alignItems: 'center', paddingTop: 80, paddingHorizontal: 40 },

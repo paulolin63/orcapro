@@ -2,8 +2,9 @@
  * assinatura.js
  * Monetizacao hibrida:
  * - Free: 3 orcamentos/mes
- * - Lifetime: PDF/orcamentos ilimitados
- * - Assinatura IA: ilimitado + creditos IA/mes
+ * - Lifetime (1x): PDF/orcamentos ilimitados + funil/stats. SEM IA.
+ * - Assinatura IA (mensal/anual): ilimitado + creditos voz/foto / mes
+ * - Pack IA: consumivel avulso (+creditos); nao incluso no Lifetime
  * - Pacote consumivel: +creditos IA
  *
  * Ver MONETIZACAO.md

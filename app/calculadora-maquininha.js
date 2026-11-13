@@ -103,9 +103,6 @@ export default function CalculadoraMaquininha() {
           <Text style={{ color: '#888' }}>Informe um valor valido.</Text>
         )}
 
-        <Text style={estilos.dica}>
-          Taxas medias de mercado (Stone/PagSeguro/Cielo). Ajuste mentalmente se a sua maquina for diferente.
-        </Text>
       </View>
     </ScrollView>
   );
@@ -129,5 +126,4 @@ const estilos = StyleSheet.create({
   input: { marginBottom: 16, backgroundColor: '#fff' },
   card: { borderRadius: 12, backgroundColor: '#fff' },
   linha: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 4 },
-  dica: { fontSize: 11, color: '#888', marginTop: 16, lineHeight: 16 },
 });

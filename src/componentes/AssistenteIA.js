@@ -36,7 +36,6 @@ const INPUT_THEME = {
 
 export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
   const [saldo, setSaldo] = useState(null);
-  const [demoDisponivel, setDemoDisponivel] = useState(false);
   const [gravando, setGravando] = useState(false);
   const [processando, setProcessando] = useState(false);
   const [textoHint, setTextoHint] = useState('');
@@ -46,8 +45,6 @@ export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
     try {
       const s = await obterSaldoCreditosIa();
       setSaldo(s);
-      const demo = await SecureStore.getItemAsync(DEMO_IA_KEY);
-      setDemoDisponivel(!demo);
     } catch {
       setSaldo({ total: 0, assinaturaRestantes: 0, pacoteSaldo: 0 });
     }
@@ -74,13 +71,13 @@ export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
     if (!demo) {
       return await new Promise((resolve) => {
         Alert.alert(
-          '✨ Teste Grátis da IA (1x)',
-          'Experimente a criação automática por voz agora. Após o teste, você pode assinar o Pro IA ou adquirir créditos.',
+          'IA',
+          '1 teste gratis.',
           [
             { text: 'Depois', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Usar Teste Grátis', onPress: () => resolve('demo') },
+            { text: 'Testar', onPress: () => resolve('demo') },
             {
-              text: 'Ver Planos Pro',
+              text: 'Planos',
               onPress: () => {
                 if (onPrecisaCredito) onPrecisaCredito();
                 resolve(false);
@@ -92,11 +89,11 @@ export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
     }
 
     Alert.alert(
-      '👑 Recurso Exclusivo Pro IA',
-      'Você utilizou seu teste grátis. Desbloqueie o Pro IA (com 20 usos de voz/mês) ou adquira um pacote de créditos para continuar.',
+      'IA',
+      'Sem creditos.',
       [
-        { text: 'Agora não', style: 'cancel' },
-        { text: 'Desbloquear Pro IA', onPress: () => onPrecisaCredito && onPrecisaCredito() },
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Planos', onPress: () => onPrecisaCredito && onPrecisaCredito() },
       ]
     );
     return false;
@@ -243,17 +240,11 @@ export default function AssistenteIA({ onRascunho, onPrecisaCredito }) {
     <Card style={estilos.card}>
       <Card.Content>
         <View style={estilos.topo}>
-          <Text style={estilos.titulo}>⚡ Assistente IA por Voz</Text>
+          <Text style={estilos.titulo}>IA</Text>
           <Chip compact style={estilos.chip} textStyle={{ color: '#162544', fontWeight: '700', fontSize: 11 }}>
-            {typeof total === 'number'
-              ? `${total} crédito${total === 1 ? '' : 's'}${demoDisponivel && total === 0 ? ' · 1x grátis' : ''}`
-              : '…'}
+            {typeof total === 'number' ? String(total) : '...'}
           </Chip>
         </View>
-
-        <Text style={estilos.dica}>
-          Dite o serviço por voz (ou digite abaixo). A IA extrai o cliente, itens, materiais e mão de obra automaticamente!
-        </Text>
 
         <TextInput
           mode="outlined"
@@ -334,7 +325,6 @@ const estilos = StyleSheet.create({
   },
   titulo: { fontWeight: '800', color: '#162544', fontSize: 15 },
   chip: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1' },
-  dica: { fontSize: 12, color: '#475569', marginBottom: 10, lineHeight: 16 },
   input: { marginBottom: 10, backgroundColor: '#ffffff' },
   botoes: { flexDirection: 'row', alignItems: 'center' },
   loading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10 },

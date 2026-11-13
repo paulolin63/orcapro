@@ -37,6 +37,8 @@ Com o OrçaPro, você calcula custos de materiais, mão de obra, deslocamento e 
 Seus dados de orçamento ficam na memória do seu telefone (SQLite). Não vendemos dados seus ou dos seus clientes. Pagamentos Pro são processados pelo Google Play.
 
 Experimente gratuitamente e profissionalize o seu negócio hoje mesmo!
+
+Versao Permanente: orcamentos ilimitados e painel de fechamento (tempo ate aceitar, faixas de preco, follow-up) — dados so no aparelho.
 ```
 
 ---
@@ -71,7 +73,7 @@ Apos o primeiro `.aab` no teste fechado:
 ### A) In-app products
 | SKU | Tipo | Preco | Entrega |
 |-----|------|-------|---------|
-| `orcapro_pro_lifetime` | Nao consumivel | R$ 29,90 | PDF/orcamentos ilimitados |
+| `orcapro_pro_lifetime` | Nao consumivel | R$ 29,90 | PDF/orcamentos ilimitados + funil de fechamento (local) |
 | `orcapro_ia_pack_15` | Consumivel | R$ 9,90 | +15 creditos voz/foto IA |
 
 ### B) Assinaturas Pro IA

@@ -4,12 +4,40 @@
  * O Expo Router usa este arquivo para definir navegação e temas globais.
  */
 
-import { useEffect } from 'react';
-import { View } from 'react-native';
+import { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
-import { PaperProvider, MD3LightTheme, IconButton } from 'react-native-paper';
+import { PaperProvider, MD3LightTheme, IconButton, Menu } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { abrirBanco } from '@src/banco-de-dados';
+
+function HeaderMais() {
+  const router = useRouter();
+  const [aberto, setAberto] = useState(false);
+
+  function ir(rota) {
+    setAberto(false);
+    router.push(rota);
+  }
+
+  return (
+    <Menu
+      visible={aberto}
+      onDismiss={() => setAberto(false)}
+      anchor={
+        <IconButton
+          icon="dots-vertical"
+          iconColor="#fff"
+          size={22}
+          onPress={() => setAberto(true)}
+        />
+      }
+    >
+      <Menu.Item onPress={() => ir('/calculadora-maquininha')} title="Maquininha" leadingIcon="credit-card-outline" />
+      <Menu.Item onPress={() => ir('/estatisticas')} title="Estatisticas" leadingIcon="chart-bar" />
+      <Menu.Item onPress={() => ir('/configuracoes')} title="Configuracoes" leadingIcon="cog" />
+    </Menu>
+  );
+}
 
 // Tema OrçaPro 3D (Prancheta Navy & Âmbar Ouro & Pix Verde-Água)
 const tema = {
@@ -36,8 +64,6 @@ const tema = {
 };
 
 export default function RootLayout() {
-  const router = useRouter();
-
   // Inicia o banco de dados quando o app abre — como conectar ao banco no __construct()
   useEffect(() => {
     abrirBanco().catch(console.error);
@@ -58,28 +84,7 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'OrçaPro',
-            headerRight: () => (
-              <View style={{ flexDirection: 'row' }}>
-                <IconButton
-                  icon="credit-card-outline"
-                  iconColor="#fff"
-                  size={22}
-                  onPress={() => router.push('/calculadora-maquininha')}
-                />
-                <IconButton
-                  icon="chart-bar"
-                  iconColor="#fff"
-                  size={22}
-                  onPress={() => router.push('/estatisticas')}
-                />
-                <IconButton
-                  icon="cog"
-                  iconColor="#fff"
-                  size={22}
-                  onPress={() => router.push('/configuracoes')}
-                />
-              </View>
-            ),
+            headerRight: () => <HeaderMais />,
           }}
         />
         <Stack.Screen name="novo-orcamento" options={{ title: 'Novo Orçamento', presentation: 'modal' }} />

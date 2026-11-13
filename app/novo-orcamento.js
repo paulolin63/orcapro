@@ -19,7 +19,7 @@ import {
   SegmentedButtons, Portal, Modal, Switch
 } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { criarOrcamento, lerTodasConfigs } from '@src/banco-de-dados';
+import { criarOrcamento, lerTodasConfigs, marcarEnviado } from '@src/banco-de-dados';
 import { calcularItemSubtotal, calcularTotal, calcularMaquininha,
          formatarReais, parsearReais, TAXAS_MAQUININHA_PADRAO } from '@src/calculos';
 import { gerarPDF, compartilharPDF } from '@src/pdf';
@@ -91,6 +91,7 @@ export default function NovoOrcamento() {
   const [parcelasSelecionadas, setParcelasSelecionadas] = useState('1');
   const [quotaOk, setQuotaOk] = useState(false);
   const [modalPaywallIa, setModalPaywallIa] = useState(false);
+  const [modeloId, setModeloId] = useState(null);
 
   // Re-check gate on mount (FAB check is UX only)
   useEffect(() => {
@@ -188,6 +189,7 @@ export default function NovoOrcamento() {
       quantidade: i.quantidade != null ? String(i.quantidade) : '1',
     }));
     if (itensModelo.length) setItens(itensModelo);
+    setModeloId(modelo.id != null ? Number(modelo.id) : null);
     setStep(2);
   }
 
@@ -251,6 +253,7 @@ export default function NovoOrcamento() {
         lucro_pct:     parsearReais(extras.lucro_pct),
         total:         resultado.preco_final,
         notas:         extras.notas.trim() || null,
+        modelo_id:     modeloId,
       };
 
       // Salva no SQLite e obtém o ID gerado
@@ -267,6 +270,7 @@ export default function NovoOrcamento() {
 
       // Compartilha imediatamente via WhatsApp / qualquer app
       await compartilharPDF(pdfUri);
+      await marcarEnviado(orcamentoId);
 
       // Volta para a lista
       router.replace('/');
@@ -310,7 +314,7 @@ export default function NovoOrcamento() {
               onPrecisaPro={() => setModalPaywallIa(true)}
             />
 
-            <Text variant="titleMedium" style={estilos.titulo}>👤 Dados do Cliente</Text>
+            <Text variant="titleMedium" style={estilos.titulo}>Dados do cliente</Text>
 
             <TextInput
               {...INPUT_OPTS}
@@ -346,7 +350,7 @@ export default function NovoOrcamento() {
             />
 
             <Button mode="contained" onPress={() => setStep(2)} style={estilos.botaoProximo}>
-              Próximo → Itens do Serviço
+              Continuar
             </Button>
           </View>
         )}
@@ -354,7 +358,7 @@ export default function NovoOrcamento() {
         {/* ── STEP 2: ITENS ────────────────────────────────────── */}
         {step === 2 && (
           <View style={estilos.secao}>
-            <Text variant="titleMedium" style={estilos.titulo}>🔧 Itens e Serviços</Text>
+            <Text variant="titleMedium" style={estilos.titulo}>Itens</Text>
 
             {itens.map((item, index) => (
               <Card key={index} style={estilos.cardItem}>
@@ -439,8 +443,8 @@ export default function NovoOrcamento() {
             <Divider style={{ marginVertical: 16 }} />
 
             <View style={estilos.linhaNavegacao}>
-              <Button mode="text" onPress={() => setStep(1)}>← Voltar</Button>
-              <Button mode="contained" onPress={() => setStep(3)}>Próximo →</Button>
+              <Button mode="text" onPress={() => setStep(1)}>Voltar</Button>
+              <Button mode="contained" onPress={() => setStep(3)}>Continuar</Button>
             </View>
           </View>
         )}
@@ -448,7 +452,7 @@ export default function NovoOrcamento() {
         {/* ── STEP 3: EXTRAS, LUCRO E RESUMO ───────────────────── */}
         {step === 3 && (
           <View style={estilos.secao}>
-            <Text variant="titleMedium" style={estilos.titulo}>💰 Custos Extras e Lucro</Text>
+            <Text variant="titleMedium" style={estilos.titulo}>Extras</Text>
 
             <View style={estilos.linha2}>
               <TextInput
@@ -530,7 +534,7 @@ export default function NovoOrcamento() {
             <Divider style={{ marginVertical: 16 }} />
 
             <View style={estilos.linhaNavegacao}>
-              <Button mode="text" onPress={() => setStep(2)}>← Voltar</Button>
+              <Button mode="text" onPress={() => setStep(2)}>Voltar</Button>
               <Button
                 mode="contained"
                 onPress={salvarEGerar}
@@ -538,7 +542,7 @@ export default function NovoOrcamento() {
                 disabled={salvando}
                 icon="file-pdf-box"
               >
-                Gerar PDF e Enviar
+                Salvar
               </Button>
             </View>
           </View>

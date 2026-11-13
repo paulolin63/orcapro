@@ -180,6 +180,34 @@ await (async () => {
   }
   console.log('PASS required screens/files');
 
+  const bancoSrc = fs.readFileSync(new URL('../src/banco-de-dados.js', import.meta.url), 'utf8');
+  for (const sym of [
+    'migrarColunasOrcamento',
+    'marcarEnviado',
+    'definirFollowup',
+    'listarFollowupsPendentes',
+    'estatisticasFunil',
+    'enviado_em',
+    'fechado_em',
+    'followup_em',
+    'valor_fechado',
+    'modelo_id',
+  ]) {
+    assert.ok(bancoSrc.includes(sym), `banco missing ${sym}`);
+  }
+  console.log('PASS funil schema/api symbols');
+
+  const estSrc = fs.readFileSync(new URL('../app/estatisticas.js', import.meta.url), 'utf8');
+  assert.ok(estSrc.includes('estatisticasFunil'));
+  assert.ok(estSrc.includes('Fechamento (Pro)'));
+  assert.ok(estSrc.includes('Desbloquear'));
+  console.log('PASS estatisticas funil gate copy');
+
+  const paySrc = fs.readFileSync(new URL('../src/componentes/ModalPaywall.js', import.meta.url), 'utf8');
+  assert.ok(paySrc.includes('Estatisticas de fechamento'));
+  assert.ok(paySrc.includes('Sem IA'));
+  console.log('PASS paywall permanente benefits');
+
   const { gerarRascunhoMock } = await import('../src/ia-rascunho.js');
   const r = await gerarRascunhoMock({ origem: 'audio', textoUsuario: 'instalar ar split 12000 btu' });
   assert.ok(r.itens.length >= 1);

@@ -154,15 +154,10 @@ export default function Configuracoes() {
                 style={{ width: 200, height: 60, resizeMode: 'contain' }}
               />
             ) : (
-              <Text style={{ color: '#888', fontSize: 13 }}>
-                📷 Toque para selecionar seu logo
-              </Text>
+              <Text style={{ color: '#888', fontSize: 13 }}>Logo</Text>
             )}
           </Card.Content>
         </Card>
-        <Text style={estilos.dica}>
-          Aparece no cabeçalho dos PDFs. Proporção ideal: 4:1 (ex: 400×100 pixels)
-        </Text>
 
         <Divider style={{ marginVertical: 16 }} />
 
@@ -210,9 +205,6 @@ export default function Configuracoes() {
 
         {/* ── PIX ── */}
         <Text variant="titleSmall" style={estilos.subtitulo}>Chave Pix</Text>
-        <Text style={estilos.dica}>
-          Aparece no PDF como QR Code (para escanear) e como texto (para copiar).
-        </Text>
 
         <TextInput
           {...INPUT_OPTS}
@@ -229,7 +221,7 @@ export default function Configuracoes() {
           <Card style={estilos.cardPix}>
             <Card.Content>
               <Text style={{ fontSize: 12, color: '#1a73e8', fontWeight: '700' }}>
-                ✅ Tipo detectado: {tipoChave}
+                {tipoChave}
               </Text>
               <Text style={{ fontSize: 11, color: '#555', marginTop: 4 }}>
                 {formatarChavePix(config.pix_key)}
@@ -241,10 +233,7 @@ export default function Configuracoes() {
         {FEATURE_PRO_IA ? (
           <>
             <Divider style={{ marginVertical: 16 }} />
-            <Text variant="titleSmall" style={estilos.subtitulo}>Inteligência Artificial (Opcional)</Text>
-            <Text style={estilos.dica}>
-              Insira sua chave gratuita da Google Gemini API para reconhecimento de voz online avançado. Se deixar em branco, o assistente usará o processador inteligente local.
-            </Text>
+            <Text variant="titleSmall" style={estilos.subtitulo}>Gemini</Text>
             <TextInput
               {...INPUT_OPTS}
               label="Chave Google Gemini API (opcional)"
@@ -270,7 +259,7 @@ export default function Configuracoes() {
           style={{ marginBottom: 40 }}
           icon="content-save"
         >
-          Salvar Configurações
+          Salvar
         </Button>
       </View>
     </ScrollView>
@@ -282,7 +271,6 @@ const estilos = StyleSheet.create({
   secao:        { padding: 16 },
   subtitulo:    { fontWeight: '700', color: '#333', marginBottom: 10 },
   input:        { marginBottom: 10, backgroundColor: '#fff' },
-  dica:         { fontSize: 11, color: '#888', marginBottom: 10 },
   cardLogo:     { alignItems: 'center', marginBottom: 8 },
   conteudoLogo: { height: 80, justifyContent: 'center', alignItems: 'center' },
   cardPix:      { backgroundColor: '#e8f4fd', marginBottom: 10 },
