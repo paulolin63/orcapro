@@ -109,7 +109,7 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
   // ── Logo do técnico ───────────────────────────────────────────
   const logoHtml = config.logo_uri
     ? `<img src="${config.logo_uri}" class="logo" alt="Logo" />`
-    : `<div class="logo-placeholder">${escapar(config.nome_empresa || 'OrçaPro')}</div>`;
+    : `<div class="logo-placeholder">${escapar(config.nome_empresa || 'OrçaPronto')}</div>`;
 
   // ── HTML completo ─────────────────────────────────────────────
   // PHP analogy: echo $html; dentro de um template

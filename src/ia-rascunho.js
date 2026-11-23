@@ -135,7 +135,7 @@ export function extrairComRegrasLocais(texto) {
     extras: {
       frete: freteValor,
       lucro_pct: '30',
-      notas: 'Gerado pelo Assistente de Voz OrçaPro. Revise os valores antes de fechar.',
+      notas: 'Gerado pelo Assistente de Voz OrçaPronto. Revise os valores antes de fechar.',
     },
     resumo,
   };

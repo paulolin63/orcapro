@@ -39,7 +39,7 @@ function HeaderMais() {
   );
 }
 
-// Tema OrçaPro 3D (Prancheta Navy & Âmbar Ouro & Pix Verde-Água)
+// Tema OrçaPronto 3D (Prancheta Navy & Âmbar Ouro & Pix Verde-Água)
 const tema = {
   ...MD3LightTheme,
   colors: {
@@ -83,7 +83,7 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: 'OrçaPro',
+            title: 'OrçaPronto',
             headerRight: () => <HeaderMais />,
           }}
         />

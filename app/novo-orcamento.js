@@ -103,7 +103,7 @@ export default function NovoOrcamento() {
         const msg = permissao.motivo === 'storage_indisponivel'
           ? 'Nao foi possivel validar sua cota local. Tente novamente.'
           : 'Voce atingiu o limite gratuito deste mes.';
-        Alert.alert('OrçaPro Pro', msg, [
+        Alert.alert('OrçaPronto Pro', msg, [
           { text: 'OK', onPress: () => router.back() },
         ]);
         return;
@@ -224,7 +224,7 @@ export default function NovoOrcamento() {
         const msg = consumo.motivo === 'storage_indisponivel'
           ? 'Nao foi possivel gravar a cota local. Tente novamente.'
           : 'Limite gratuito atingido. Desbloqueie o Pro para continuar.';
-        Alert.alert('OrçaPro Pro', msg);
+        Alert.alert('OrçaPronto Pro', msg);
         return;
       }
 
