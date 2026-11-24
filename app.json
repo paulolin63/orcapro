@@ -17,7 +17,7 @@
         "backgroundColor": "#151724"
       },
       "package": "com.orcapro.myapp",
-      "versionCode": 7,
+      "versionCode": 8,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
@@ -53,6 +53,7 @@
         "./plugins/withBillingVersion",
         "8.0.0"
       ],
+      "./plugins/with16KbAlignment",
       [
         "expo-image-picker",
         {

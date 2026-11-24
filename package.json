@@ -8,6 +8,7 @@
     "build:android": "eas build --platform android --profile production",
     "build:preview": "eas build --platform android --profile preview",
     "test:smoke": "node scripts/smoke-test.mjs",
+    "verify:16kb": "python3 scripts/verify-16kb.py",
     "prebuild:check": "node scripts/smoke-test.mjs && npx expo config --type public",
     "postinstall": "node scripts/patch-billing-version.mjs && node scripts/patch-rniap-billing8.mjs"
   },
