@@ -82,7 +82,7 @@ export default function NovoOrcamento() {
   const [extras, setExtras] = useState({
     frete: '',
     outros: '',
-    lucro_pct: '30',
+    lucro_pct: '0',
     notas: '',
   });
 
@@ -478,13 +478,16 @@ export default function NovoOrcamento() {
 
             <TextInput
               {...INPUT_OPTS}
-              label="Margem de lucro (%)"
+              label="Margem extra / lucro adicional (%)"
               value={extras.lucro_pct}
               onChangeText={v => setExtras(p => ({ ...p, lucro_pct: v }))}
               style={estilos.input}
               keyboardType="decimal-pad"
               right={<TextInput.Affix text="%" />}
             />
+            <Text style={{ fontSize: 12, color: '#64748b', marginTop: -6, marginBottom: 10 }}>
+              Se o preço do serviço já inclui seu ganho, deixe em 0%.
+            </Text>
 
             <TextInput
               {...INPUT_OPTS}
@@ -506,11 +509,13 @@ export default function NovoOrcamento() {
                 <LinhaSomatorio label="Deslocamento"         valor={parsearReais(extras.frete)} />
                 <LinhaSomatorio label="Outros"               valor={parsearReais(extras.outros)} />
                 <LinhaSomatorio label="Custo total"          valor={resultado.custo_total} destaque />
-                <LinhaSomatorio
-                  label={`Lucro (${extras.lucro_pct || 0}%)`}
-                  valor={resultado.lucro_valor}
-                  cor="#22c55e"
-                />
+                {resultado.lucro_valor > 0 && (
+                  <LinhaSomatorio
+                    label={`Lucro (${extras.lucro_pct || 0}%)`}
+                    valor={resultado.lucro_valor}
+                    cor="#22c55e"
+                  />
+                )}
                 <Divider style={{ marginVertical: 8 }} />
                 <LinhaSomatorio
                   label="💵 PREÇO FINAL"

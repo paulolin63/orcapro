@@ -48,6 +48,43 @@ export function calcularTotal(subtotal, frete, outros, lucro_pct) {
 }
 
 /**
+ * Ajusta valores exibidos dos itens no PDF para que soma(itens) + frete + outros === total.
+ * Evita divergencia visual na proposta do cliente quando ha margem/lucro extra aplicada.
+ */
+export function calcularItensParaPdf(orcamento, itens = []) {
+  const frete = Number(orcamento?.frete) || 0;
+  const outros = Number(orcamento?.outros) || 0;
+  const total = Number(orcamento?.total) || 0;
+  const targetItemsSum = arredondar(Math.max(0, total - frete - outros));
+  const rawSum = arredondar(
+    itens.reduce((acc, it) => acc + (Number(it.subtotal) || 0), 0)
+  );
+
+  if (itens.length > 0 && rawSum > 0 && Math.abs(targetItemsSum - rawSum) >= 0.01) {
+    let running = 0;
+    return itens.map((it, idx) => {
+      const qtd = Number(it.quantidade) || 1;
+      const isLast = idx === itens.length - 1;
+      const exibido_subtotal = isLast
+        ? arredondar(targetItemsSum - running)
+        : arredondar(((Number(it.subtotal) || 0) / rawSum) * targetItemsSum);
+      running = arredondar(running + exibido_subtotal);
+      return {
+        ...it,
+        exibido_subtotal,
+        exibido_unitario: arredondar(exibido_subtotal / qtd),
+      };
+    });
+  }
+
+  return itens.map((it) => ({
+    ...it,
+    exibido_unitario: arredondar((Number(it.custo_material) || 0) + (Number(it.custo_mao_obra) || 0)),
+    exibido_subtotal: arredondar(Number(it.subtotal) || 0),
+  }));
+}
+
+/**
  * Dado um preço de venda desejado, descobre qual é o percentual de lucro.
  * (Modo reverso: "quero cobrar R$200, quanto de lucro é isso?")
  *

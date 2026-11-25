@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Image } from 'react-native';
 import { Text, TextInput, Button, Divider, Card, List } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import { lerTodasConfigs, salvarConfig } from '@src/banco-de-dados';
@@ -134,7 +135,18 @@ export default function Configuracoes() {
     });
 
     if (!resultado.canceled) {
-      editar('logo_uri', resultado.assets[0].uri);
+      const assetUri = resultado.assets[0].uri;
+      try {
+        const cleanUri = assetUri.split('?')[0].toLowerCase();
+        const ext = cleanUri.endsWith('.png') ? 'png' : 'jpg';
+        const dest = `${FileSystem.documentDirectory}empresa-logo.${ext}`;
+        await FileSystem.deleteAsync(dest, { idempotent: true });
+        await FileSystem.copyAsync({ from: assetUri, to: dest });
+        editar('logo_uri', dest);
+      } catch (e) {
+        console.warn('Falha ao persistir logo localmente:', e);
+        editar('logo_uri', assetUri);
+      }
     }
   }
 

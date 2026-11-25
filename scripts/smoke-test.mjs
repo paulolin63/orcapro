@@ -11,6 +11,7 @@ import {
 } from '../src/pix.js';
 import {
   calcularTotal,
+  calcularItensParaPdf,
   calcularMaquininha,
   calcularItemSubtotal,
   parsearReais,
@@ -84,6 +85,30 @@ ok('parse/format BRL', () => {
   assert.ok(formatarReais(1234.56).includes('1.234,56'));
 });
 
+ok('pdf line items lucro 0% (500 + 50 = 550)', () => {
+  const tot = calcularTotal(500, 50, 0, 0);
+  assert.equal(tot.preco_final, 550);
+  const res = calcularItensParaPdf(
+    { frete: 50, outros: 0, total: tot.preco_final },
+    [{ descricao: 'Instalar ar', custo_material: 0, custo_mao_obra: 500, quantidade: 1, subtotal: 500 }]
+  );
+  assert.equal(res[0].exibido_unitario, 500);
+  assert.equal(res[0].exibido_subtotal, 500);
+  assert.equal(res[0].exibido_subtotal + 50, 550);
+});
+
+ok('pdf line items lucro 20% (500 + 50 -> total 660, item 610)', () => {
+  const tot = calcularTotal(500, 50, 0, 20);
+  assert.equal(tot.preco_final, 660);
+  const res = calcularItensParaPdf(
+    { frete: 50, outros: 0, total: tot.preco_final },
+    [{ descricao: 'Instalar ar', custo_material: 0, custo_mao_obra: 500, quantidade: 1, subtotal: 500 }]
+  );
+  assert.equal(res[0].exibido_unitario, 610);
+  assert.equal(res[0].exibido_subtotal, 610);
+  assert.equal(res[0].exibido_subtotal + 50, 660);
+});
+
 await (async () => {
   try {
     const p = gerarPayloadPix({
@@ -95,9 +120,13 @@ await (async () => {
     const url = await QRCode.toDataURL(p, { width: 128, margin: 1 });
     assert.ok(url.startsWith('data:image/png;base64,'));
     console.log('PASS qrcode data url');
+
+    const svg = await QRCode.toString(p, { type: 'svg', errorCorrectionLevel: 'M', margin: 1 });
+    assert.ok(svg.includes('<svg') && svg.includes('</svg>'));
+    console.log('PASS qrcode svg string');
   } catch (e) {
     failed += 1;
-    console.error('FAIL qrcode data url', e.message);
+    console.error('FAIL qrcode svg/data url', e.message);
   }
 
   // IAP SKU constants without RN imports: parse file text

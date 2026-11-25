@@ -13,7 +13,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import QRCode from 'qrcode';
 import { gerarPayloadPix } from './pix';
-import { formatarReais } from './calculos';
+import { formatarReais, calcularItensParaPdf } from './calculos';
 
 // ─────────────────────────────────────────
 // GERAR PDF E SALVAR NO CELULAR
@@ -31,8 +31,32 @@ import { formatarReais } from './calculos';
  * @param {object} [opcoes]
  * @param {boolean} [opcoes.mostrarMarcaFree] — badge Free no rodape (default false)
  */
+/**
+ * Carrega o logo local e converte para Data URI base64 (para expo-print/WebView).
+ */
+async function carregarLogoBase64(logoUri) {
+  if (!logoUri) return null;
+  if (logoUri.startsWith('data:')) return logoUri;
+  try {
+    const base64 = await FileSystem.readAsStringAsync(logoUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    if (!base64) return null;
+    const clean = logoUri.split('?')[0].toLowerCase();
+    const mime = clean.endsWith('.png')
+      ? 'image/png'
+      : clean.endsWith('.webp')
+        ? 'image/webp'
+        : 'image/jpeg';
+    return `data:${mime};base64,${base64}`;
+  } catch (e) {
+    console.warn('Falha ao carregar logo em base64:', e);
+    return null;
+  }
+}
+
 export async function gerarPDF(orcamento, itens, config, opcoes = {}) {
-  let qrCodeUrl = null;
+  let qrCodeSvg = null;
   if (config.pix_key) {
     try {
       const pixPayload = gerarPayloadPix({
@@ -41,18 +65,21 @@ export async function gerarPDF(orcamento, itens, config, opcoes = {}) {
         cidade: config.cidade || 'Brasil',
         valor: orcamento.total > 0 ? orcamento.total : null,
       });
-      qrCodeUrl = await QRCode.toDataURL(pixPayload, {
+      qrCodeSvg = await QRCode.toString(pixPayload, {
+        type: 'svg',
         errorCorrectionLevel: 'M',
         margin: 1,
-        width: 220,
-        type: 'image/png',
       });
     } catch (e) {
       console.warn('Falha ao gerar QR Pix offline:', e);
     }
   }
 
-  const html = montarHTML(orcamento, itens, config, qrCodeUrl, opcoes);
+  const logoDataUri = await carregarLogoBase64(config.logo_uri);
+  const html = montarHTML(orcamento, itens, config, qrCodeSvg, {
+    ...opcoes,
+    logoDataUri,
+  });
 
   // Converte HTML → PDF (igual ao DOMPDF no PHP)
   const { uri } = await Print.printToFileAsync({
@@ -91,24 +118,25 @@ export async function compartilharPDF(uri) {
 // PHP analogy: como montar uma view com ob_start() + include()
 // ─────────────────────────────────────────
 
-function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
+function montarHTML(orcamento, itens, config, qrCodeSvg = null, opcoes = {}) {
   const hoje          = new Date().toLocaleDateString('pt-BR');
   const validade      = calcularDataValidade(orcamento.validade_dias);
   const marcaFree     = !!opcoes.mostrarMarcaFree;
 
   // ── Linhas da tabela de itens ──────────────────────────────────
-  const linhasItens = itens.map((item, i) => `
+  const itensPdf = calcularItensParaPdf(orcamento, itens);
+  const linhasItens = itensPdf.map((item, i) => `
     <tr class="${i % 2 === 0 ? 'par' : 'impar'}">
       <td>${escapar(item.descricao)}</td>
       <td class="direita">${item.quantidade}x</td>
-      <td class="direita">${formatarReais(item.custo_material + item.custo_mao_obra)}</td>
-      <td class="direita"><strong>${formatarReais(item.subtotal)}</strong></td>
+      <td class="direita">${formatarReais(item.exibido_unitario)}</td>
+      <td class="direita"><strong>${formatarReais(item.exibido_subtotal)}</strong></td>
     </tr>
   `).join('');
 
   // ── Logo do técnico ───────────────────────────────────────────
-  const logoHtml = config.logo_uri
-    ? `<img src="${config.logo_uri}" class="logo" alt="Logo" />`
+  const logoHtml = opcoes.logoDataUri
+    ? `<img src="${opcoes.logoDataUri}" class="logo" alt="Logo" />`
     : `<div class="logo-placeholder">${escapar(config.nome_empresa || 'OrçaPronto')}</div>`;
 
   // ── HTML completo ─────────────────────────────────────────────
@@ -213,6 +241,7 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
     /* ── Pagamento / Pix ── */
     .pagamento {
       display: flex;
+      justify-content: space-between;
       align-items: flex-start;
       gap: 20px;
       background: #F4F8FC;
@@ -236,6 +265,7 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
     }
     .qrcode-box { text-align: center; }
     .qrcode-box img { width: 100px; height: 100px; }
+    .qrcode-box svg { width: 110px; height: 110px; display: block; margin: 0 auto; }
     .qrcode-box small { font-size: 9px; color: #888; display: block; margin-top: 3px; }
 
     /* ── Garantia e notas ── */
@@ -342,12 +372,14 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
         🔑 ${escapar(config.pix_key_tipo || 'Chave Pix')}: ${escapar(config.pix_key)}
       </div>
       <p style="margin-top: 8px; font-size: 10px; color: #888;">
-        Escaneie o QR Code ao lado ou copie a chave Pix acima
+        ${qrCodeSvg
+          ? 'Escaneie o QR Code ao lado ou copie a chave Pix acima'
+          : 'Copie a chave Pix acima para pagamento'}
       </p>
     </div>
-    ${qrCodeUrl ? `
+    ${qrCodeSvg ? `
     <div class="qrcode-box">
-      <img src="${qrCodeUrl}" alt="QR Code Pix" />
+      ${qrCodeSvg}
       <small>QR Code Pix</small>
     </div>` : ''}
   </div>` : ''}
