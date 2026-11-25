@@ -371,8 +371,8 @@ function montarHTML(orcamento, itens, config, qrCodeUrl = null, opcoes = {}) {
   <!-- RODAPE -->
   <div class="rodape">
     ${marcaFree
-      ? 'Gerado no OrcaPro Free · atualize para Permanente e remova esta marca · '
-      : 'Orcamento gerado pelo OrcaPro · '}
+      ? 'Gerado no OrçaPronto Free · atualize para Permanente e remova esta marca · '
+      : 'Orçamento gerado pelo OrçaPronto · '}
     valido por ${orcamento.validade_dias} dias a partir da data de emissao
   </div>
 

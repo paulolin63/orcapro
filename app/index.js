@@ -6,7 +6,8 @@
 
 import { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { FAB, Text, Chip, Card, Divider, Searchbar } from 'react-native-paper';
+import { FAB, Text, Chip, Card, Divider, Searchbar, Button } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { listarOrcamentos } from '@src/banco-de-dados';
 import { formatarReais } from '@src/calculos';
@@ -104,9 +105,53 @@ export default function TelaInicial() {
   function ListaVazia() {
     return (
       <View style={estilos.vazio}>
-        <Text variant="titleMedium" style={{ color: '#555' }}>
-          Nenhum orçamento
-        </Text>
+        <Card style={estilos.cardOnboarding}>
+          <Card.Content style={{ alignItems: 'center', paddingVertical: 16 }}>
+            <View style={estilos.iconeOnboarding}>
+              <MaterialCommunityIcons name="file-document-edit-outline" size={32} color="#FFA000" />
+            </View>
+            <Text variant="titleMedium" style={estilos.tituloOnboarding}>
+              Crie seu 1º orçamento em 1 minuto
+            </Text>
+
+            <View style={estilos.passosOnboarding}>
+              <View style={estilos.passoLinha}>
+                <View style={estilos.passoNum}><Text style={estilos.passoNumTxt}>1</Text></View>
+                <Text style={estilos.passoTxt}>Informe o cliente</Text>
+              </View>
+              <View style={estilos.passoLinha}>
+                <View style={estilos.passoNum}><Text style={estilos.passoNumTxt}>2</Text></View>
+                <Text style={estilos.passoTxt}>Adicione materiais, mão de obra e lucro</Text>
+              </View>
+              <View style={estilos.passoLinha}>
+                <View style={estilos.passoNum}><Text style={estilos.passoNumTxt}>3</Text></View>
+                <Text style={estilos.passoTxt}>Gere o PDF com Pix e envie no WhatsApp</Text>
+              </View>
+            </View>
+
+            <Button
+              mode="contained"
+              icon="plus"
+              buttonColor="#162544"
+              textColor="#ffffff"
+              onPress={novoOrcamento}
+              style={estilos.btnOnboardingPrimario}
+              contentStyle={{ paddingVertical: 4 }}
+            >
+              Criar primeiro orçamento
+            </Button>
+
+            <Button
+              mode="outlined"
+              icon="cog-outline"
+              textColor="#162544"
+              onPress={() => router.push('/configuracoes')}
+              style={estilos.btnOnboardingSecundario}
+            >
+              Configurar minha empresa e Pix
+            </Button>
+          </Card.Content>
+        </Card>
       </View>
     );
   }
@@ -128,17 +173,27 @@ export default function TelaInicial() {
 
       {/* Filtros de status */}
       <View style={estilos.filtros}>
-        {[null, 'aguardando', 'fechado', 'recusado'].map(s => (
-          <Chip
-            key={String(s)}
-            selected={filtroStatus === s}
-            onPress={() => setFiltroStatus(s)}
-            style={estilos.chipFiltro}
-            compact
-          >
-            {s === null ? 'Todos' : STATUS_CONFIG[s].label}
-          </Chip>
-        ))}
+        {[null, 'aguardando', 'fechado', 'recusado'].map(s => {
+          const selecionado = filtroStatus === s;
+          return (
+            <Chip
+              key={String(s)}
+              selected={selecionado}
+              onPress={() => setFiltroStatus(s)}
+              selectedColor="#ffffff"
+              style={[
+                estilos.chipFiltro,
+                selecionado
+                  ? { backgroundColor: '#162544', borderColor: '#162544', borderWidth: 1 }
+                  : { backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderWidth: 1 },
+              ]}
+              textStyle={{ color: selecionado ? '#ffffff' : '#162544', fontWeight: selecionado ? '700' : '500' }}
+              compact
+            >
+              {s === null ? 'Todos' : STATUS_CONFIG[s].label}
+            </Chip>
+          );
+        })}
       </View>
 
       <Divider />
@@ -175,6 +230,7 @@ export default function TelaInicial() {
       <FAB
         icon="plus"
         label="Novo"
+        color="#ffffff"
         style={estilos.fab}
         onPress={novoOrcamento}
       />
@@ -190,13 +246,23 @@ export default function TelaInicial() {
 }
 
 const estilos = StyleSheet.create({
-  container:   { flex: 1, backgroundColor: '#F4F7FB' },
-  busca:       { margin: 12, marginBottom: 8, elevation: 2, backgroundColor: '#fff' },
-  filtros:     { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 8 },
-  chipFiltro:  { borderRadius: 20 },
-  linhaQuota:  { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6 },
-  card:        { borderRadius: 12, elevation: 2, backgroundColor: '#fff', borderLeftWidth: 4, borderLeftColor: '#162544' },
-  cardTopo:    { flexDirection: 'row', alignItems: 'flex-start' },
-  vazio:       { alignItems: 'center', paddingTop: 80, paddingHorizontal: 40 },
-  fab:         { position: 'absolute', bottom: 24, right: 16, backgroundColor: '#162544' },
+  container:               { flex: 1, backgroundColor: '#F4F7FB' },
+  busca:                   { margin: 12, marginBottom: 8, elevation: 2, backgroundColor: '#fff' },
+  filtros:                 { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 8, flexWrap: 'wrap' },
+  chipFiltro:              { borderRadius: 20 },
+  linhaQuota:              { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6 },
+  card:                    { borderRadius: 12, elevation: 2, backgroundColor: '#fff', borderLeftWidth: 4, borderLeftColor: '#162544' },
+  cardTopo:                { flexDirection: 'row', alignItems: 'flex-start' },
+  vazio:                   { paddingTop: 24, paddingHorizontal: 16 },
+  cardOnboarding:          { borderRadius: 16, backgroundColor: '#fff', elevation: 2, borderTopWidth: 4, borderTopColor: '#FFA000' },
+  iconeOnboarding:         { width: 60, height: 60, borderRadius: 30, backgroundColor: '#162544', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  tituloOnboarding:        { fontWeight: '800', color: '#162544', textAlign: 'center', marginBottom: 14 },
+  passosOnboarding:        { width: '100%', gap: 8, marginBottom: 18 },
+  passoLinha:              { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#F8FAFC', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0' },
+  passoNum:                { width: 22, height: 22, borderRadius: 11, backgroundColor: '#00B49F', alignItems: 'center', justifyContent: 'center' },
+  passoNumTxt:             { color: '#ffffff', fontSize: 12, fontWeight: '800' },
+  passoTxt:                { flex: 1, color: '#162544', fontSize: 13, fontWeight: '600' },
+  btnOnboardingPrimario:   { width: '100%', borderRadius: 10, marginBottom: 10 },
+  btnOnboardingSecundario: { width: '100%', borderRadius: 10, borderColor: '#cbd5e1' },
+  fab:                     { position: 'absolute', bottom: 24, right: 16, backgroundColor: '#162544' },
 });

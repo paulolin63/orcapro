@@ -12,7 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  View, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Platform
+  View, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableOpacity
 } from 'react-native';
 import {
   Text, TextInput, Button, Divider, IconButton, Card,
@@ -576,20 +576,35 @@ export default function NovoOrcamento() {
 // COMPONENTES AUXILIARES
 // ─────────────────────────────────────────
 
+const STEP_LABELS = {
+  1: 'Cliente',
+  2: 'Itens',
+  3: 'Lucro & PDF',
+};
+
 function TouchableStep({ step, atual, onPress }) {
   const ativo = step === atual;
   return (
-    <View
-      style={[
-        estilos.step,
-        ativo && estilos.stepAtivo,
-        step < atual && estilos.stepConcluido,
-      ]}
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={estilos.stepWrapper}
     >
-      <Text style={{ color: ativo || step < atual ? '#fff' : '#999', fontWeight: '700', fontSize: 12 }}>
-        {step < atual ? '✓' : String(step)}
+      <View
+        style={[
+          estilos.step,
+          ativo && estilos.stepAtivo,
+          step < atual && estilos.stepConcluido,
+        ]}
+      >
+        <Text style={{ color: ativo || step < atual ? '#fff' : '#64748b', fontWeight: '700', fontSize: 12 }}>
+          {step < atual ? '✓' : String(step)}
+        </Text>
+      </View>
+      <Text style={[estilos.stepLabel, ativo && estilos.stepLabelAtivo]}>
+        {STEP_LABELS[step]}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -652,10 +667,13 @@ function ModalMaquininha({ valorBase, onFechar }) {
 
 const estilos = StyleSheet.create({
   container:      { flex: 1, backgroundColor: '#F4F7FB' },
-  progressBar:    { flexDirection: 'row', justifyContent: 'center', gap: 12, padding: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
-  step:           { width: 32, height: 32, borderRadius: 16, backgroundColor: '#ddd', alignItems: 'center', justifyContent: 'center' },
+  progressBar:    { flexDirection: 'row', justifyContent: 'center', gap: 16, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
+  stepWrapper:    { alignItems: 'center', minWidth: 72 },
+  step:           { width: 32, height: 32, borderRadius: 16, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' },
   stepAtivo:      { backgroundColor: '#162544' },
   stepConcluido:  { backgroundColor: '#22c55e' },
+  stepLabel:      { fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: '600' },
+  stepLabelAtivo: { color: '#162544', fontWeight: '800' },
   secao:          { padding: 16 },
   titulo:         { fontWeight: '800', marginBottom: 16, color: '#162544' },
   input:          { marginBottom: 10, backgroundColor: '#fff' },

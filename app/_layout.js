@@ -50,6 +50,8 @@ const tema = {
     onPrimaryContainer: '#162544',
     secondary: '#FFA000',        // Dourado Âmbar da Chave Inglesa e R$
     onSecondary: '#ffffff',
+    secondaryContainer: '#E8EDF5',
+    onSecondaryContainer: '#162544',
     tertiary: '#00B49F',         // Verde-água Oficial do Diamante Pix
     onTertiary: '#ffffff',
     surface: '#ffffff',          // Fundo de cards e modais branco
