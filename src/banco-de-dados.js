@@ -93,6 +93,8 @@ async function migrarColunasOrcamento() {
     ['followup_em', 'TEXT'],
     ['valor_fechado', 'REAL'],
     ['modelo_id', 'INTEGER'],
+    ['incluir_assinatura', 'INTEGER'],
+    ['garantia_dias', 'INTEGER'],
   ];
   for (const [nome, tipo] of adicionar) {
     if (!nomes.has(nome)) {
@@ -143,10 +145,15 @@ export async function criarOrcamento(dados, itens) {
   let orcamentoId = null;
 
   await db.withTransactionAsync(async () => {
+    const modeloIdNum =
+      dados.modelo_id != null && dados.modelo_id !== '' && Number.isFinite(Number(dados.modelo_id))
+        ? Number(dados.modelo_id)
+        : null;
+
     const result = await db.runAsync(
       `INSERT INTO orcamentos
-        (cliente_nome, cliente_tel, endereco, validade_dias, subtotal, frete, outros, lucro_pct, total, notas, modelo_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (cliente_nome, cliente_tel, endereco, validade_dias, subtotal, frete, outros, lucro_pct, total, notas, modelo_id, incluir_assinatura, garantia_dias)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         dados.cliente_nome,
         dados.cliente_tel || null,
@@ -155,10 +162,12 @@ export async function criarOrcamento(dados, itens) {
         dados.subtotal || 0,
         dados.frete || 0,
         dados.outros || 0,
-        dados.lucro_pct || 30,
+        dados.lucro_pct ?? 0,
         dados.total || 0,
         dados.notas || null,
-        dados.modelo_id != null ? Number(dados.modelo_id) : null,
+        modeloIdNum,
+        dados.incluir_assinatura ? 1 : 0,
+        Number(dados.garantia_dias) || 90,
       ]
     );
 
@@ -408,4 +417,24 @@ export async function listarModelos() {
 
 export async function deletarModelo(id) {
   await db.runAsync('DELETE FROM modelos WHERE id = ?', [id]);
+}
+
+// ─────────────────────────────────────────
+// CLIENTES SALVOS (RECORRENTES)
+// ─────────────────────────────────────────
+
+export async function listarClientesRecentes(limite = 20) {
+  return await db.getAllAsync(
+    `SELECT
+       TRIM(cliente_nome) AS cliente_nome,
+       MAX(cliente_tel) AS cliente_tel,
+       MAX(endereco) AS endereco,
+       COUNT(*) AS total_orcamentos
+     FROM orcamentos
+     WHERE TRIM(COALESCE(cliente_nome, '')) != ''
+     GROUP BY LOWER(TRIM(cliente_nome))
+     ORDER BY MAX(id) DESC
+     LIMIT ?`,
+    [limite]
+  );
 }

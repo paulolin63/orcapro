@@ -17,7 +17,7 @@
         "backgroundColor": "#151724"
       },
       "package": "com.orcapro.myapp",
-      "versionCode": 11,
+      "versionCode": 12,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA"
@@ -40,7 +40,10 @@
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
             "minSdkVersion": 24,
-            "ndkVersion": "28.2.13676358"
+            "ndkVersion": "28.2.13676358",
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.dooboolab.rniap.** { *; }\n-keep class com.android.billingclient.** { *; }\n-keep class expo.modules.sqlite.** { *; }\n-keep class expo.modules.securestore.** { *; }\n-keep class expo.modules.print.** { *; }\n-keep class expo.modules.av.** { *; }\n-keep class expo.modules.imagepicker.** { *; }"
           }
         }
       ],

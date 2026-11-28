@@ -286,6 +286,24 @@ function montarHTML(orcamento, itens, config, qrCodeSvg = null, opcoes = {}) {
       padding-left: 10px;
       margin-bottom: 12px;
     }
+    .assinatura-bloco {
+      display: flex;
+      justify-content: space-between;
+      gap: 32px;
+      margin-top: 28px;
+      margin-bottom: 16px;
+    }
+    .assinatura-col {
+      flex: 1;
+      text-align: center;
+      font-size: 10px;
+      color: #444;
+    }
+    .assinatura-linha {
+      border-bottom: 1px solid #333;
+      height: 28px;
+      margin-bottom: 6px;
+    }
 
     /* ── Rodapé ── */
     .rodape {
@@ -394,11 +412,25 @@ function montarHTML(orcamento, itens, config, qrCodeSvg = null, opcoes = {}) {
   <!-- GARANTIA LEGAL -->
   <div class="garantia">
     <strong>⚖️ Garantia:</strong>
-    Os serviços prestados têm garantia de <strong>90 (noventa) dias</strong> conforme o
-    art. 26 do Código de Defesa do Consumidor (Lei nº 8.078/90).
+    ${(Number(orcamento.garantia_dias) || 90) === 90
+      ? 'Os serviços prestados têm garantia de <strong>90 (noventa) dias</strong> conforme o art. 26 do Código de Defesa do Consumidor (Lei nº 8.078/90).'
+      : `Os serviços prestados têm garantia de <strong>${Number(orcamento.garantia_dias) || 90} dias</strong> contados a partir da conclusão do atendimento.`}
     A garantia cobre apenas defeitos decorrentes da execução dos serviços contratados.
     Peças e materiais fornecidos pelo cliente não estão cobertos por esta garantia.
   </div>
+
+  ${orcamento.incluir_assinatura ? `
+  <!-- ASSINATURA DE APROVAÇÃO -->
+  <div class="assinatura-bloco">
+    <div class="assinatura-col">
+      <div class="assinatura-linha"></div>
+      <p><strong>${escapar(config.nome_empresa || 'Responsável Técnico')}</strong></p>
+    </div>
+    <div class="assinatura-col">
+      <div class="assinatura-linha"></div>
+      <p>De acordo: <strong>${escapar(orcamento.cliente_nome)}</strong></p>
+    </div>
+  </div>` : ''}
 
   <!-- RODAPE -->
   <div class="rodape">

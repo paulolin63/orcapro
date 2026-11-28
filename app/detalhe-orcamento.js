@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Alert, TextInput as RNTextInput } from 'react-native';
+import { View, ScrollView, StyleSheet, Alert, TextInput as RNTextInput, Linking } from 'react-native';
 import { Text, Card, Chip, Button, Divider, ActivityIndicator, Portal, Modal, Menu, IconButton } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import {
@@ -45,6 +45,7 @@ export default function DetalheOrcamento() {
   const [nomeModelo, setNomeModelo] = useState('');
   const [menuAberto, setMenuAberto] = useState(false);
   const [statusAberto, setStatusAberto] = useState(false);
+  const [ehPro, setEhPro] = useState(false);
 
   useEffect(() => {
     carregar();
@@ -53,6 +54,30 @@ export default function DetalheOrcamento() {
   async function carregar() {
     const dados = await buscarOrcamento(id);
     setOrcamento(dados);
+    try {
+      const ent = await verificarEntitlement();
+      setEhPro(!!ent.ilimitadoOrcamentos);
+    } catch {}
+  }
+
+  async function cobrarRetornoWhatsApp() {
+    if (!ehPro) {
+      setPaywall(true);
+      return;
+    }
+    try {
+      const numero = String(orcamento.id).padStart(4, '0');
+      const msg = `Olá ${orcamento.cliente_nome}, tudo bem? Passando para saber se conseguiu avaliar o orçamento #${numero} (${formatarReais(orcamento.total)}) e se ficou alguma dúvida. Consigo reservar um horário para você esta semana!`;
+      const digitos = String(orcamento.cliente_tel || '').replace(/\D/g, '');
+      const fone =
+        digitos.length === 10 || digitos.length === 11 ? `55${digitos}` : digitos;
+      const url = fone
+        ? `https://wa.me/${fone}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('WhatsApp', 'Não foi possível abrir o WhatsApp neste aparelho.');
+    }
   }
 
   async function mudarStatus(novoStatus) {
@@ -365,10 +390,30 @@ export default function DetalheOrcamento() {
           onPress={reenviarPdf}
           loading={gerandoPdf}
           disabled={gerandoPdf || busy}
+          textColor="#ffffff"
           style={{ backgroundColor: '#25D366' }}
         >
-          WhatsApp
+          Enviar PDF no WhatsApp
         </Button>
+
+        {orcamento.status === 'aguardando' ? (
+          <Button
+            mode="outlined"
+            icon="message-text-clock-outline"
+            textColor="#162544"
+            onPress={cobrarRetornoWhatsApp}
+            style={{
+              marginTop: 10,
+              borderColor: '#FFA000',
+              borderWidth: 1.5,
+              backgroundColor: '#FFFBEB',
+            }}
+          >
+            {ehPro
+              ? 'Cobrar retorno gentil no WhatsApp'
+              : 'Cobrar retorno no WhatsApp · 🔒 Pro'}
+          </Button>
+        ) : null}
       </View>
 
       <Portal>
@@ -393,7 +438,10 @@ export default function DetalheOrcamento() {
       <ModalPaywall
         visivel={paywall}
         onFechar={() => setPaywall(false)}
-        onSucesso={() => setPaywall(false)}
+        onSucesso={() => {
+          setPaywall(false);
+          carregar();
+        }}
       />
     </ScrollView>
   );

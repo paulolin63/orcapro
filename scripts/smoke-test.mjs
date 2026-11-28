@@ -234,8 +234,17 @@ await (async () => {
 
   const paySrc = fs.readFileSync(new URL('../src/componentes/ModalPaywall.js', import.meta.url), 'utf8');
   assert.ok(paySrc.includes('Estatisticas de fechamento'));
-  assert.ok(paySrc.includes('Sem IA'));
-  console.log('PASS paywall permanente benefits');
+  assert.ok(paySrc.includes('OrçaPronto IA'));
+  assert.ok(paySrc.includes('vip_lista_ia'));
+  console.log('PASS paywall permanente benefits + IA teaser');
+
+  const modelosSrc = fs.readFileSync(new URL('../src/componentes/SeletorModelos.js', import.meta.url), 'utf8');
+  assert.ok(modelosSrc.includes('MODELOS_PRONTOS_PADRAO'));
+  const pdfSrc = fs.readFileSync(new URL('../src/pdf.js', import.meta.url), 'utf8');
+  assert.ok(pdfSrc.includes('assinatura-bloco'));
+  assert.ok(pdfSrc.includes('garantia_dias'));
+  assert.ok(bancoSrc.includes('listarClientesRecentes'));
+  console.log('PASS pro conversion features (modelos, assinatura PDF, clientes salvos)');
 
   const { gerarRascunhoMock } = await import('../src/ia-rascunho.js');
   const r = await gerarRascunhoMock({ origem: 'audio', textoUsuario: 'instalar ar split 12000 btu' });

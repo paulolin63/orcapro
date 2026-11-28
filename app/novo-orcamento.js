@@ -16,15 +16,23 @@ import {
 } from 'react-native';
 import {
   Text, TextInput, Button, Divider, IconButton, Card,
-  SegmentedButtons, Portal, Modal, Switch
+  SegmentedButtons, Portal, Modal, Switch, Chip
 } from 'react-native-paper';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
-import { criarOrcamento, lerTodasConfigs, marcarEnviado } from '@src/banco-de-dados';
+import {
+  criarOrcamento,
+  lerTodasConfigs,
+  marcarEnviado,
+  listarClientesRecentes,
+  lerConfig,
+  salvarConfig,
+} from '@src/banco-de-dados';
 import { calcularItemSubtotal, calcularTotal, calcularMaquininha,
          formatarReais, parsearReais, TAXAS_MAQUININHA_PADRAO } from '@src/calculos';
 import { gerarPDF, compartilharPDF } from '@src/pdf';
 import { checarPermissaoNovoOrcamento, consumirQuotaSePermitido, verificarEntitlement } from '@src/assinatura';
-import { FEATURE_WATERMARK_FREE } from '@src/feature-flags';
+import { FEATURE_WATERMARK_FREE, FEATURE_PRO_IA } from '@src/feature-flags';
 import AssistenteIA from '@src/componentes/AssistenteIA';
 import ModalPaywall from '@src/componentes/ModalPaywall';
 import SeletorModelos from '@src/componentes/SeletorModelos';
@@ -86,12 +94,25 @@ export default function NovoOrcamento() {
     notas: '',
   });
 
-  // Maquininha
+  // Maquininha e Recursos Pro
   const [modalMaquininha, setModalMaquininha] = useState(false);
   const [parcelasSelecionadas, setParcelasSelecionadas] = useState('1');
   const [quotaOk, setQuotaOk] = useState(false);
   const [modalPaywallIa, setModalPaywallIa] = useState(false);
   const [modeloId, setModeloId] = useState(null);
+  const [ehPro, setEhPro] = useState(false);
+  const [clientesSalvos, setClientesSalvos] = useState([]);
+  const [modalClientes, setModalClientes] = useState(false);
+  const [vipIa, setVipIa] = useState(false);
+  const [incluirAssinatura, setIncluirAssinatura] = useState(false);
+  const [garantiaDias, setGarantiaDias] = useState(90);
+
+  async function atualizarStatusPro() {
+    try {
+      const ent = await verificarEntitlement();
+      setEhPro(!!ent.ilimitadoOrcamentos);
+    } catch {}
+  }
 
   // Re-check gate on mount (FAB check is UX only)
   useEffect(() => {
@@ -109,9 +130,24 @@ export default function NovoOrcamento() {
         return;
       }
       setQuotaOk(true);
+      const ent = await verificarEntitlement();
+      if (ativo) setEhPro(!!ent.ilimitadoOrcamentos);
+      const listaCli = await listarClientesRecentes(20).catch(() => []);
+      if (ativo) setClientesSalvos(listaCli || []);
+      const jaVip = await lerConfig('vip_lista_ia').catch(() => null);
+      if (ativo && jaVip === '1') setVipIa(true);
     })();
     return () => { ativo = false; };
   }, [router]);
+
+  async function entrarListaVipIa() {
+    try {
+      await salvarConfig('vip_lista_ia', '1');
+      setVipIa(true);
+    } catch {
+      setVipIa(true);
+    }
+  }
 
   // ─────────────────────────────────────────
   // CÁLCULOS em tempo real (equivale a JS inline numa página PHP)
@@ -189,7 +225,9 @@ export default function NovoOrcamento() {
       quantidade: i.quantidade != null ? String(i.quantidade) : '1',
     }));
     if (itensModelo.length) setItens(itensModelo);
-    setModeloId(modelo.id != null ? Number(modelo.id) : null);
+    setModeloId(
+      modelo.id != null && Number.isFinite(Number(modelo.id)) ? Number(modelo.id) : null
+    );
     setStep(2);
   }
 
@@ -243,17 +281,19 @@ export default function NovoOrcamento() {
 
       // Dados do orçamento para inserir no banco
       const dadosOrcamento = {
-        cliente_nome:  cliente.nome.trim(),
-        cliente_tel:   cliente.tel.trim() || null,
-        endereco:      cliente.endereco.trim() || null,
-        validade_dias: Number(cliente.validade_dias) || 7,
-        subtotal:      subtotalItens,
-        frete:         parsearReais(extras.frete),
-        outros:        parsearReais(extras.outros),
-        lucro_pct:     parsearReais(extras.lucro_pct),
-        total:         resultado.preco_final,
-        notas:         extras.notas.trim() || null,
-        modelo_id:     modeloId,
+        cliente_nome:       cliente.nome.trim(),
+        cliente_tel:        cliente.tel.trim() || null,
+        endereco:           cliente.endereco.trim() || null,
+        validade_dias:      Number(cliente.validade_dias) || 7,
+        subtotal:           subtotalItens,
+        frete:              parsearReais(extras.frete),
+        outros:             parsearReais(extras.outros),
+        lucro_pct:          parsearReais(extras.lucro_pct),
+        total:              resultado.preco_final,
+        notas:              extras.notas.trim() || null,
+        modelo_id:          modeloId,
+        incluir_assinatura: ehPro && incluirAssinatura ? 1 : 0,
+        garantia_dias:      ehPro ? garantiaDias : 90,
       };
 
       // Salva no SQLite e obtém o ID gerado
@@ -309,12 +349,66 @@ export default function NovoOrcamento() {
               onPrecisaCredito={() => setModalPaywallIa(true)}
             />
 
+            {!FEATURE_PRO_IA && (
+              <Card style={estilos.cardIaBreve}>
+                <Card.Content style={{ paddingVertical: 10 }}>
+                  <View style={estilos.iaBreveTopo}>
+                    <View style={estilos.badgeIaBreve}>
+                      <Text style={estilos.badgeIaBreveTxt}>🤖 EM BREVE · PRÓXIMA VERSÃO</Text>
+                    </View>
+                  </View>
+                  <Text style={estilos.iaBreveTitulo}>
+                    OrçaPronto IA: Orçamento por Voz e Foto ✨
+                  </Text>
+                  <Text style={estilos.iaBreveSub}>
+                    Dite o serviço no microfone ou tire foto da lista de materiais e a IA preencherá todo o orçamento sozinha!
+                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={entrarListaVipIa}
+                    style={[estilos.btnVipIa, vipIa && estilos.btnVipIaOk]}
+                  >
+                    <MaterialCommunityIcons
+                      name={vipIa ? 'check-circle' : 'bell-ring-outline'}
+                      size={15}
+                      color={vipIa ? '#065F46' : '#0F766E'}
+                    />
+                    <Text style={[estilos.btnVipIaTxt, vipIa && { color: '#065F46' }]}>
+                      {vipIa ? 'Você está na lista VIP da versão IA!' : 'Quero ser avisado quando a IA chegar'}
+                    </Text>
+                  </TouchableOpacity>
+                </Card.Content>
+              </Card>
+            )}
+
             <SeletorModelos
               onAplicar={aplicarModelo}
               onPrecisaPro={() => setModalPaywallIa(true)}
             />
 
-            <Text variant="titleMedium" style={estilos.titulo}>Dados do cliente</Text>
+            <View style={estilos.cabecalhoCliente}>
+              <Text variant="titleMedium" style={[estilos.titulo, { marginBottom: 0 }]}>
+                Dados do cliente
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={estilos.btnClienteSalvo}
+                onPress={() => {
+                  if (!ehPro) {
+                    setModalPaywallIa(true);
+                  } else {
+                    setModalClientes(true);
+                  }
+                }}
+              >
+                <MaterialCommunityIcons name="account-clock-outline" size={15} color="#162544" />
+                <Text style={estilos.btnClienteSalvoTxt}>
+                  {ehPro
+                    ? `Clientes salvos${clientesSalvos.length ? ` (${clientesSalvos.length})` : ''}`
+                    : 'Cliente salvo 🔒 Pro'}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             <TextInput
               {...INPUT_OPTS}
@@ -536,7 +630,101 @@ export default function NovoOrcamento() {
               Calcular taxa da maquininha
             </Button>
 
-            <Divider style={{ marginVertical: 16 }} />
+            {/* ── OPÇÕES PROFISSIONAIS DO PDF (GATILHO DE VALOR PRO) ── */}
+            <Card style={estilos.cardProPdf}>
+              <Card.Content>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <Text style={{ fontWeight: '800', fontSize: 14, color: '#162544' }}>
+                    📄 Apresentação Profissional do PDF
+                  </Text>
+                  {!ehPro ? (
+                    <TouchableOpacity onPress={() => setModalPaywallIa(true)} style={estilos.tagProPequena}>
+                      <Text style={estilos.tagProPequenaTxt}>👑 Seja Pro</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  disabled={ehPro}
+                  onPress={() => setModalPaywallIa(true)}
+                  style={estilos.linhaOpcaoPro}
+                >
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={estilos.opcaoProTitulo}>
+                      PDF limpo (sem rodapé &quot;OrçaPronto Free&quot;)
+                    </Text>
+                    <Text style={estilos.opcaoProSub}>
+                      Transmita máxima credibilidade para fechar mais caro
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: ehPro ? '#16a34a' : '#B45309' }}>
+                    {ehPro ? '✓ Ativo' : '🔒 Pro'}
+                  </Text>
+                </TouchableOpacity>
+
+                <Divider style={{ marginVertical: 8 }} />
+
+                <View style={estilos.linhaOpcaoPro}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={estilos.opcaoProTitulo}>
+                      Campo de Assinatura do Cliente {!ehPro ? '🔒' : ''}
+                    </Text>
+                    <Text style={estilos.opcaoProSub}>
+                      Inclui linha &quot;De acordo / Assinatura&quot; no final do PDF
+                    </Text>
+                  </View>
+                  <Switch
+                    value={ehPro && incluirAssinatura}
+                    color="#162544"
+                    onValueChange={(val) => {
+                      if (!ehPro) {
+                        setModalPaywallIa(true);
+                        return;
+                      }
+                      setIncluirAssinatura(val);
+                    }}
+                  />
+                </View>
+
+                <Divider style={{ marginVertical: 8 }} />
+
+                <Text style={[estilos.opcaoProTitulo, { marginBottom: 6 }]}>
+                  Prazo de garantia no PDF {!ehPro ? '(personalizável no Pro 🔒)' : ''}
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                  {[30, 90, 180, 365].map((dias) => {
+                    const ativo = (ehPro ? garantiaDias : 90) === dias;
+                    return (
+                      <Chip
+                        key={dias}
+                        compact
+                        selected={ativo}
+                        selectedColor="#ffffff"
+                        style={
+                          ativo
+                            ? { backgroundColor: '#162544' }
+                            : { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1' }
+                        }
+                        textStyle={{ color: ativo ? '#ffffff' : '#162544', fontSize: 11, fontWeight: '700' }}
+                        onPress={() => {
+                          if (!ehPro && dias !== 90) {
+                            setModalPaywallIa(true);
+                            return;
+                          }
+                          setGarantiaDias(dias);
+                        }}
+                      >
+                        {dias === 365 ? '1 ano' : `${dias} dias`}
+                        {!ehPro && dias !== 90 ? ' 🔒' : ''}
+                      </Chip>
+                    );
+                  })}
+                </View>
+              </Card.Content>
+            </Card>
+
+            <Divider style={{ marginVertical: 14 }} />
 
             <View style={estilos.linhaNavegacao}>
               <Button mode="text" onPress={() => setStep(2)}>Voltar</Button>
@@ -567,10 +755,56 @@ export default function NovoOrcamento() {
           />
         </Modal>
 
+        <Modal
+          visible={modalClientes}
+          onDismiss={() => setModalClientes(false)}
+          contentContainerStyle={estilos.modal}
+        >
+          <ScrollView>
+            <Text variant="titleMedium" style={{ fontWeight: '800', color: '#162544', marginBottom: 10 }}>
+              👥 Clientes anteriores
+            </Text>
+            {clientesSalvos.length === 0 ? (
+              <Text style={{ color: '#64748b', fontSize: 13 }}>
+                Seus clientes aparecerão salvos aqui automaticamente após o 1º orçamento gerado.
+              </Text>
+            ) : (
+              clientesSalvos.map((c, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={estilos.itemClienteModal}
+                  onPress={() => {
+                    setCliente((p) => ({
+                      ...p,
+                      nome: c.cliente_nome || p.nome,
+                      tel: c.cliente_tel || '',
+                      endereco: c.endereco || '',
+                    }));
+                    setModalClientes(false);
+                  }}
+                >
+                  <Text style={{ fontWeight: '700', color: '#162544', fontSize: 14 }}>
+                    {c.cliente_nome}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                    {[c.cliente_tel, c.endereco].filter(Boolean).join(' · ') || 'Toque para preencher'}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
+            <Button onPress={() => setModalClientes(false)} style={{ marginTop: 12 }}>
+              Fechar
+            </Button>
+          </ScrollView>
+        </Modal>
+
         <ModalPaywall
           visivel={modalPaywallIa}
           onFechar={() => setModalPaywallIa(false)}
-          onSucesso={() => setModalPaywallIa(false)}
+          onSucesso={() => {
+            setModalPaywallIa(false);
+            atualizarStatusPro();
+          }}
         />
       </Portal>
     </KeyboardAvoidingView>
@@ -688,6 +922,25 @@ const estilos = StyleSheet.create({
   cardItem:       { marginBottom: 12, backgroundColor: '#fff', borderRadius: 12 },
   cardItemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   subtotalItem:   { fontSize: 12, color: '#162544', fontWeight: '800', textAlign: 'right', marginTop: 4 },
-  cardResumo:     { backgroundColor: '#EBF2FA', marginVertical: 8, borderRadius: 12 },
-  modal:          { backgroundColor: '#fff', margin: 20, padding: 20, borderRadius: 16, maxHeight: '80%' },
+  cardResumo:          { backgroundColor: '#EBF2FA', marginVertical: 8, borderRadius: 12 },
+  cardIaBreve:         { marginBottom: 12, backgroundColor: '#F0FDFA', borderRadius: 12, borderWidth: 1, borderColor: '#99F6E4' },
+  iaBreveTopo:         { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  badgeIaBreve:        { backgroundColor: '#CCFBF1', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  badgeIaBreveTxt:     { fontSize: 10, fontWeight: '900', color: '#0F766E' },
+  iaBreveTitulo:       { fontSize: 14, fontWeight: '800', color: '#162544', marginBottom: 3 },
+  iaBreveSub:          { fontSize: 12, color: '#334155', lineHeight: 17, marginBottom: 8 },
+  btnVipIa:            { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#ffffff', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, borderWidth: 1, borderColor: '#5EEAD4' },
+  btnVipIaOk:          { backgroundColor: '#D1FAE5', borderColor: '#6EE7B7' },
+  btnVipIaTxt:         { fontSize: 11, fontWeight: '800', color: '#0F766E' },
+  cabecalhoCliente:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  btnClienteSalvo:     { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FCD34D', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16 },
+  btnClienteSalvoTxt:  { fontSize: 11, fontWeight: '800', color: '#162544' },
+  cardProPdf:          { backgroundColor: '#FFFDF5', borderRadius: 12, borderWidth: 1.5, borderColor: '#FDE68A', marginTop: 6 },
+  tagProPequena:       { backgroundColor: '#FFA000', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  tagProPequenaTxt:    { fontSize: 10, fontWeight: '900', color: '#162544' },
+  linhaOpcaoPro:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  opcaoProTitulo:      { fontSize: 12, fontWeight: '700', color: '#162544' },
+  opcaoProSub:         { fontSize: 11, color: '#64748b', marginTop: 1 },
+  itemClienteModal:    { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
+  modal:               { backgroundColor: '#fff', margin: 20, padding: 20, borderRadius: 16, maxHeight: '80%' },
 });

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { PaperProvider, MD3LightTheme, IconButton, Menu } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
@@ -20,22 +21,33 @@ function HeaderMais() {
   }
 
   return (
-    <Menu
-      visible={aberto}
-      onDismiss={() => setAberto(false)}
-      anchor={
-        <IconButton
-          icon="dots-vertical"
-          iconColor="#fff"
-          size={22}
-          onPress={() => setAberto(true)}
-        />
-      }
-    >
-      <Menu.Item onPress={() => ir('/calculadora-maquininha')} title="Maquininha" leadingIcon="credit-card-outline" />
-      <Menu.Item onPress={() => ir('/estatisticas')} title="Estatisticas" leadingIcon="chart-bar" />
-      <Menu.Item onPress={() => ir('/configuracoes')} title="Configuracoes" leadingIcon="cog" />
-    </Menu>
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: -6 }}>
+      <IconButton
+        icon="cog-outline"
+        iconColor="#fff"
+        size={22}
+        accessibilityLabel="Configurações"
+        onPress={() => router.push('/configuracoes')}
+        style={{ marginHorizontal: 0 }}
+      />
+      <Menu
+        visible={aberto}
+        onDismiss={() => setAberto(false)}
+        anchor={
+          <IconButton
+            icon="dots-vertical"
+            iconColor="#fff"
+            size={22}
+            onPress={() => setAberto(true)}
+            style={{ marginHorizontal: 0 }}
+          />
+        }
+      >
+        <Menu.Item onPress={() => ir('/calculadora-maquininha')} title="Maquininha" leadingIcon="credit-card-outline" />
+        <Menu.Item onPress={() => ir('/estatisticas')} title="Estatisticas" leadingIcon="chart-bar" />
+        <Menu.Item onPress={() => ir('/configuracoes')} title="Configuracoes (Logo e Pix)" leadingIcon="cog" />
+      </Menu>
+    </View>
   );
 }
 

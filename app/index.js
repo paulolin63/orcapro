@@ -9,7 +9,7 @@ import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { FAB, Text, Chip, Card, Divider, Searchbar, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { listarOrcamentos } from '@src/banco-de-dados';
+import { listarOrcamentos, lerTodasConfigs } from '@src/banco-de-dados';
 import { formatarReais } from '@src/calculos';
 import { checarPermissaoNovoOrcamento } from '@src/assinatura';
 import ModalPaywall from '@src/componentes/ModalPaywall';
@@ -29,12 +29,14 @@ export default function TelaInicial() {
   const [filtroStatus, setFiltroStatus] = useState(null); // null = todos
   const [modalPaywallAberto, setModalPaywallAberto] = useState(false);
   const [statusQuota, setStatusQuota] = useState({ ehPro: false, usados: 0, restantes: 3 });
+  const [configs, setConfigs] = useState({});
 
   // useFocusEffect = executa toda vez que a tela fica visível
   useFocusEffect(
     useCallback(() => {
       carregarOrcamentos();
       checarPermissaoNovoOrcamento().then(setStatusQuota);
+      lerTodasConfigs().then(setConfigs).catch(() => {});
     }, [filtroStatus])
   );
 
@@ -98,6 +100,55 @@ export default function TelaInicial() {
             </View>
           </Card.Content>
         </Card>
+      </TouchableOpacity>
+    );
+  }
+
+  const temNome = !!String(configs.nome_empresa || '').trim();
+  const temLogo = !!String(configs.logo_uri || '').trim();
+  const temPix  = !!String(configs.pix_key || '').trim();
+  const etapasConcluidas = [temNome, temLogo, temPix].filter(Boolean).length;
+  const mostrarGuiaConfig = etapasConcluidas < 3;
+
+  function BannerConfiguracao() {
+    if (!mostrarGuiaConfig) return null;
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => router.push('/configuracoes')}
+        style={estilos.bannerConfig}
+      >
+        <View style={estilos.bannerConfigTopo}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+            <MaterialCommunityIcons name="badge-account-horizontal-outline" size={18} color="#162544" />
+            <Text style={estilos.bannerConfigTitulo}>
+              Personalize seu PDF ({etapasConcluidas}/3)
+            </Text>
+          </View>
+          <View style={estilos.bannerConfigCta}>
+            <Text style={estilos.bannerConfigCtaTxt}>Configurar →</Text>
+          </View>
+        </View>
+        <Text style={estilos.bannerConfigSub}>
+          Coloque sua Logo e Chave Pix para sair com QR Code automático no orçamento:
+        </Text>
+        <View style={estilos.bannerConfigPills}>
+          <View style={[estilos.pillItem, temNome && estilos.pillItemOk]}>
+            <Text style={[estilos.pillTxt, temNome && estilos.pillTxtOk]}>
+              {temNome ? '✓' : '○'} Sua Empresa
+            </Text>
+          </View>
+          <View style={[estilos.pillItem, temLogo && estilos.pillItemOk]}>
+            <Text style={[estilos.pillTxt, temLogo && estilos.pillTxtOk]}>
+              {temLogo ? '✓' : '○'} Sua Logo
+            </Text>
+          </View>
+          <View style={[estilos.pillItem, temPix && estilos.pillItemOk]}>
+            <Text style={[estilos.pillTxt, temPix && estilos.pillTxtOk]}>
+              {temPix ? '✓' : '○'} Chave Pix (QR)
+            </Text>
+          </View>
+        </View>
       </TouchableOpacity>
     );
   }
@@ -200,18 +251,28 @@ export default function TelaInicial() {
 
       <View style={estilos.linhaQuota}>
         {statusQuota.ehPro ? (
-          <Chip compact style={{ backgroundColor: '#e6f4ea' }} textStyle={{ color: '#1e8e3e', fontSize: 11, fontWeight: '700' }}>
-            Pro
-          </Chip>
+          <View style={estilos.proAtivoBar}>
+            <MaterialCommunityIcons name="crown" size={16} color="#B45309" />
+            <Text style={estilos.proAtivoTxt}>Pro Vitalício Ativo · Orçamentos ilimitados</Text>
+          </View>
         ) : (
-          <TouchableOpacity onPress={() => setModalPaywallAberto(true)}>
-            <Chip
-              compact
-              style={{ backgroundColor: statusQuota.restantes === 0 ? '#fce8e6' : '#e8f0fe' }}
-              textStyle={{ color: statusQuota.restantes === 0 ? '#d93025' : '#1a73e8', fontSize: 11, fontWeight: '700' }}
-            >
-              {statusQuota.restantes}/3
-            </Chip>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            style={estilos.barraPro}
+            onPress={() => setModalPaywallAberto(true)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.barraProQuota}>
+                Plano Grátis: <Text style={{ fontWeight: '900', color: statusQuota.restantes === 0 ? '#FCA5A5' : '#FFA000' }}>{statusQuota.restantes}/3</Text> restantes no mês
+              </Text>
+              <Text style={estilos.barraProSub}>
+                Ilimitado + Modelos 1-toque + PDF sem marca
+              </Text>
+            </View>
+            <View style={estilos.botaoSejaPro}>
+              <MaterialCommunityIcons name="crown" size={14} color="#162544" />
+              <Text style={estilos.botaoSejaProTxt}>Seja Pro</Text>
+            </View>
           </TouchableOpacity>
         )}
       </View>
@@ -221,6 +282,7 @@ export default function TelaInicial() {
         data={orcamentosFiltrados}
         keyExtractor={item => String(item.id)}
         renderItem={renderCard}
+        ListHeaderComponent={BannerConfiguracao}
         ListEmptyComponent={ListaVazia}
         contentContainerStyle={{ padding: 12, paddingBottom: 100 }}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
@@ -250,10 +312,28 @@ const estilos = StyleSheet.create({
   busca:                   { margin: 12, marginBottom: 8, elevation: 2, backgroundColor: '#fff' },
   filtros:                 { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 8, gap: 8, flexWrap: 'wrap' },
   chipFiltro:              { borderRadius: 20 },
-  linhaQuota:              { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6 },
+  linhaQuota:              { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 2 },
+  proAtivoBar:             { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FEF3C7', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#FDE68A' },
+  proAtivoTxt:             { color: '#92400E', fontSize: 12, fontWeight: '800' },
+  barraPro:                { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#162544', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, elevation: 2 },
+  barraProQuota:           { color: '#ffffff', fontSize: 12, fontWeight: '600' },
+  barraProSub:             { color: '#CBD5E1', fontSize: 11, marginTop: 2 },
+  botaoSejaPro:            { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFA000', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, marginLeft: 10 },
+  botaoSejaProTxt:         { color: '#162544', fontSize: 12, fontWeight: '900' },
+  bannerConfig:            { backgroundColor: '#FFFBEB', borderRadius: 12, padding: 12, marginBottom: 12, borderWidth: 1.5, borderColor: '#FCD34D' },
+  bannerConfigTopo:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  bannerConfigTitulo:      { fontSize: 13, fontWeight: '800', color: '#162544' },
+  bannerConfigCta:         { backgroundColor: '#162544', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  bannerConfigCtaTxt:      { color: '#ffffff', fontSize: 11, fontWeight: '700' },
+  bannerConfigSub:         { fontSize: 11, color: '#475569', marginBottom: 8 },
+  bannerConfigPills:       { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  pillItem:                { backgroundColor: '#ffffff', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1' },
+  pillItemOk:              { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' },
+  pillTxt:                 { fontSize: 11, color: '#475569', fontWeight: '600' },
+  pillTxtOk:               { color: '#166534', fontWeight: '800' },
   card:                    { borderRadius: 12, elevation: 2, backgroundColor: '#fff', borderLeftWidth: 4, borderLeftColor: '#162544' },
   cardTopo:                { flexDirection: 'row', alignItems: 'flex-start' },
-  vazio:                   { paddingTop: 24, paddingHorizontal: 16 },
+  vazio:                   { paddingTop: 8, paddingHorizontal: 4 },
   cardOnboarding:          { borderRadius: 16, backgroundColor: '#fff', elevation: 2, borderTopWidth: 4, borderTopColor: '#FFA000' },
   iconeOnboarding:         { width: 60, height: 60, borderRadius: 30, backgroundColor: '#162544', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   tituloOnboarding:        { fontWeight: '800', color: '#162544', textAlign: 'center', marginBottom: 14 },
